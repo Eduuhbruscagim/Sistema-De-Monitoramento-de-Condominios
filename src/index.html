@@ -19,7 +19,7 @@
             </a>
             <nav class="nav-menu">
                 <ul>
-                    <li><a href="#inicio">Início</a></li>
+                    <li><a href="index.html">Início</a></li>
                     <li><a href="#como-funciona">Como Funciona</a></li>
                     <li><a href="#recursos">Recursos</a></li>
                     <li><a href="#arquitetura"><i class="fa-solid fa-layer-group"></i> Arquitetura</a></li>
@@ -31,7 +31,7 @@
 
     <section id="inicio" class="hero container">
         <div class="hero-content">
-            <h1>Acompanhe e Fiscalize as <span class="gradient-text">Obras Públicas</span> da Sua Cidade.</h1>
+            <h1>Acompanhe e Fiscalize as Obras Públicas</span> da Sua Cidade.</h1>
             <p>Sistema fácil e transparente para ver o progresso das obras em tempo real, garantindo que sejam feitas sem atrasos e sem desvios.</p>
             <div class="cta-group">
                 <a href="#" class="btn btn-primary">Começar a Fiscalizar</a>
@@ -64,7 +64,7 @@
                         <i class="fa-solid fa-chart-line"></i>
                     </div>
                     <h3>2. Entenda o progresso</h3>
-                    <p>Gráficos intuitivos mostram se o dinheiro está sendo gasto conforme o cronograma.</p>
+                    <p>Gráficos mostram se o dinheiro está sendo gasto conforme o cronograma.</p>
                 </div>
 
                 <div class="step-card">
@@ -81,7 +81,7 @@
     <section id="recursos" class="features container">
         <div class="section-header" style="text-align: center; margin-bottom: 40px;">
             <h2>Recursos Principais</h2>
-            <p>Ferramentas poderosas para o cidadão e para o governo.</p>
+            <p>Ferramentas para o cidadão e para o governo.</p>
         </div>
 
         <div class="features-grid">
@@ -106,7 +106,7 @@
             <div class="feature-card">
                 <div class="feature-icon"><i class="fa-regular fa-flag"></i></div>
                 <h3>Canal de Denúncia</h3>
-                <p>Reporte problemas com fotos e localização anônima direto pelo aplicativo.</p>
+                <p>Reporte problemas com fotos e localização anônima diretamente pelo sistema.</p>
             </div>
         </div>
     </section>
@@ -122,9 +122,60 @@
             </div>
             <div class="footer-links">
                 <a href="#">Sobre o Projeto</a>
-                <a href="#">Contato</a>
+                <a href="#" class="btn-copy" data-email="eduguilhermebruscagim@gmail.com">Contato</a>
+            </div>
             </div>
         </div>
     </footer>
+
+    <script>
+        // --- 1. SCRIPT DO MENU MOBILE ---
+        const mobileBtn = document.querySelector('.mobile-toggle');
+        const navMenu = document.querySelector('.nav-menu');
+
+        if(mobileBtn && navMenu) {
+            mobileBtn.addEventListener('click', () => {
+                navMenu.classList.toggle('active');
+                // Troca o ícone (Hamburger <-> X)
+                const icon = mobileBtn.querySelector('i');
+                if (navMenu.classList.contains('active')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-xmark');
+                } else {
+                    icon.classList.remove('fa-xmark');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        }
+
+        // --- 2. SCRIPT DE COPIAR EMAIL ---
+        const copyBtn = document.querySelector('.btn-copy');
+
+        if(copyBtn) {
+            copyBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // Não deixa a tela pular
+                
+                const email = copyBtn.getAttribute('data-email');
+                const originalText = copyBtn.innerText;
+
+                // Copia para a área de transferência
+                navigator.clipboard.writeText(email).then(() => {
+                    // Feedback visual
+                    copyBtn.innerText = "Email Copiado!";
+                    copyBtn.style.color = "#6b7280";
+                    
+                    // Reseta depois de 2 segundos
+                    setTimeout(() => {
+                        copyBtn.innerText = originalText;
+                        copyBtn.style.backgroundColor = ""; // Volta ao original
+                        copyBtn.style.color = "";
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Erro ao copiar: ', err);
+                    alert('Erro ao copiar. O email é: ' + email);
+                });
+            });
+        }
+    </script>
 </body>
 </html>
