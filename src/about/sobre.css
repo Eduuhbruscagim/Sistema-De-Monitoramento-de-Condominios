@@ -1,0 +1,314 @@
+/* --- about.css (Blindado contra Global.css) --- */
+
+:root {
+    --primary: #2563eb;
+    --dark: #0f172a;
+    --text: #64748b;
+    --radius: 24px;
+}
+
+/* Força as configurações do corpo da página */
+body.about-page {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow-x: hidden;
+    color: var(--dark);
+    
+    /* Fundo Apple Gradient forçado */
+    background: radial-gradient(circle at 50% 0%, #eff6ff 0%, #f8fafc 60%, #ffffff 100%) !important;
+    background-attachment: fixed !important;
+    background-size: cover !important;
+}
+
+/* --- NAV FLUTUANTE --- */
+/* Usando div para evitar conflito com 'nav' global */
+.glass-nav {
+    position: fixed !important; /* Garante que fique fixa */
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1200px;
+    height: auto !important; /* Reseta altura fixa se houver */
+    
+    display: flex !important;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px !important;
+    
+    /* Vidro Fosco */
+    background: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 100px;
+    z-index: 1000;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+}
+
+.nav-logo { height: 32px; width: auto; }
+
+.back-btn {
+    text-decoration: none !important;
+    color: var(--dark) !important;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: color 0.2s;
+    background: none !important; /* Remove fundo de botão global */
+    border: none !important;
+}
+.back-btn:hover { color: var(--primary) !important; }
+
+
+/* --- HERO SECTION --- */
+.about-hero {
+    position: relative !important; /* Mata o 'fixed' do header global */
+    top: auto !important;
+    left: auto !important;
+    width: 100% !important;
+    max-width: 1000px;
+    margin: 160px auto 100px !important;
+    padding: 0 20px !important;
+    text-align: center;
+    background: transparent !important; /* Remove fundo branco do header global */
+    box-shadow: none !important; /* Remove sombra do header global */
+}
+
+.hero-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.pill-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    background: rgba(37, 99, 235, 0.1);
+    color: var(--primary);
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+}
+
+.about-hero h1 {
+    font-size: 4rem;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    margin-bottom: 30px;
+    
+    /* REMOVIDO: Gradiente de texto */
+    color: var(--dark); /* Cor sólida escura */
+    background: none;
+    -webkit-text-fill-color: initial;
+}
+
+/* A classe antiga "gradient-text" agora vira apenas um destaque azul sólido */
+.gradient-text {
+    /* REMOVIDO: Gradiente */
+    color: var(--primary); /* Azul sólido */
+    background: none;
+    -webkit-text-fill-color: initial;
+}
+
+.about-hero p {
+    font-size: 1.4rem;
+    color: var(--text);
+    line-height: 1.6;
+    max-width: 700px;
+    margin: 0 auto 60px;
+}
+
+/* IMAGEM HERO */
+.hero-visual {
+    position: relative;
+    border-radius: 32px;
+    overflow: hidden;
+    box-shadow: 0 30px 60px -10px rgba(0,0,0,0.15);
+    transform: perspective(1000px) rotateX(2deg);
+    transition: transform 0.5s ease;
+    background: #fff; /* Garante fundo caso a img falhe */
+}
+.hero-visual:hover { transform: perspective(1000px) rotateX(0deg); }
+
+.hero-visual img { width: 100%; height: auto; display: block; }
+
+.float-stat {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    padding: 20px 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.float-stat strong { font-size: 1.8rem; color: var(--primary); font-weight: 800; }
+.float-stat span { font-size: 0.9rem; color: var(--dark); font-weight: 600; }
+
+
+/* --- VALORES (GRID) --- */
+.values-section {
+    max-width: 1200px;
+    margin: 0 auto 140px;
+    padding: 0 20px;
+    position: relative;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 60px;
+    letter-spacing: -0.03em;
+    color: var(--dark);
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.value-card {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 40px;
+    border-radius: 24px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.value-card:hover {
+    background: #fff;
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px -5px rgba(37, 99, 235, 0.1);
+    border-color: transparent;
+}
+
+.icon-box {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 24px;
+}
+.blue { background: #eff6ff; color: var(--primary); }
+.purple { background: #f3e8ff; color: #9333ea; }
+.green { background: #dcfce7; color: #16a34a; }
+
+.value-card h3 { font-size: 1.25rem; margin-bottom: 12px; font-weight: 700; color: var(--dark); }
+.value-card p { color: var(--text); line-height: 1.6; font-size: 1rem; }
+
+
+/* --- TEAM --- */
+.team-section {
+    max-width: 1200px;
+    margin: 0 auto 100px;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.team-header { margin-bottom: 60px; }
+.team-header h2 { font-size: 3rem; margin-bottom: 10px; letter-spacing: -0.03em; color: var(--dark); }
+.team-header p { font-size: 1.2rem; color: var(--text); }
+
+.team-grid {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.member-card {
+    background: #fff;
+    border-radius: 24px;
+    padding: 20px;
+    width: 280px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    border: 1px solid #f1f5f9;
+    transition: 0.3s ease;
+}
+
+.member-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 30px -5px rgba(0,0,0,0.1);
+}
+
+.member-photo {
+    width: 100%;
+    height: 280px;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+.member-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.member-card:hover .member-photo img { transform: scale(1.05); }
+
+.member-card h3 { font-size: 1.2rem; margin-bottom: 5px; color: var(--dark); font-weight: 700; }
+.role { display: block; color: var(--primary); font-weight: 600; font-size: 0.9rem; margin-bottom: 15px; }
+
+.social-links {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.social-links a {
+    color: #94a3b8;
+    font-size: 1.2rem;
+    transition: 0.2s;
+}
+.social-links a:hover { color: var(--dark); transform: scale(1.1); }
+
+
+/* --- FOOTER --- */
+.simple-footer {
+    text-align: center;
+    padding: 40px;
+    color: var(--text);
+    font-size: 0.9rem;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    margin-top: 50px;
+}
+
+/* RESPONSIVIDADE */
+@media (max-width: 900px) {
+    .about-hero { margin-top: 120px !important; }
+    .about-hero h1 { font-size: 2.5rem; }
+    
+    .hero-visual { transform: none; }
+    .hero-visual:hover { transform: none; }
+    
+    .float-stat { 
+        position: relative; 
+        bottom: auto; 
+        right: auto; 
+        margin-top: -30px; 
+        width: 80%; 
+        margin-left: auto; 
+        margin-right: auto; 
+        text-align: center; 
+        align-items: center; 
+    }
+    
+    .values-grid, .team-grid { justify-content: center; }
+}

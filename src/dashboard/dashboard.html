@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel - Condomínio</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../global.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="../imagens/Logo.webp" alt="Logo" class="sidebar-logo">
+            </div>
+
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Visão Geral</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fa-solid fa-file-invoice"></i>
+                    <span>Relatórios</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Moradores</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <span>Reservas</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="../index.html" class="menu-item logout">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Sair do Sistema</span>
+                </a>
+                
+                <div class="user-profile-mini">
+                    <div class="avatar-circle">EB</div>
+                    <div class="user-info">
+                        <strong>Eduardo B.</strong>
+                        <small>Síndico</small>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            
+            <div class="top-bar">
+                <h2 class="page-title">Painel de Controle</h2>
+                
+                <div class="top-actions">
+                    <button class="icon-btn" aria-label="Notificações">
+                        <i class="fa-regular fa-bell"></i>
+                        <span class="notification-dot"></span>
+                    </button>
+                    <button class="btn-settings">
+                        <i class="fa-solid fa-gear"></i> Configurações
+                    </button>
+                </div>
+            </div>
+
+            <section class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon-box blue">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                    <div>
+                        <p class="stat-label">Saldo em Caixa</p>
+                        <h3 class="stat-value">R$ 42.500</h3>
+                        <small class="stat-change positive">+12% este mês</small>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="icon-box purple">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <p class="stat-label">Ocorrências</p>
+                        <h3 class="stat-value">3 Abertas</h3>
+                        <small class="stat-change orange">1 Urgente</small>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="icon-box green">
+                        <i class="fa-solid fa-building-user"></i>
+                    </div>
+                    <div>
+                        <p class="stat-label">Unidades</p>
+                        <h3 class="stat-value">48/50</h3>
+                        <small class="stat-change text-light">2 Vazias</small>
+                    </div>
+                </div>
+            </section>
+
+            <section class="recent-activity">
+                <h3 class="section-title">Atividades Recentes</h3>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon bg-blue"><i class="fa-solid fa-calendar-day"></i></div>
+                        <div class="activity-info">
+                            <h4>Reserva confirmada: Salão de Festas</h4>
+                            <p>Apt 402 - Data: 20/01/2026</p>
+                        </div>
+                        <span class="activity-time">2h atrás</span>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon bg-orange"><i class="fa-solid fa-hammer"></i></div>
+                        <div class="activity-info">
+                            <h4>Manutenção Elevador Bloco B</h4>
+                            <p>Técnico agendado para amanhã às 09:00</p>
+                        </div>
+                        <span class="activity-time">5h atrás</span>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+</body>
+</html>

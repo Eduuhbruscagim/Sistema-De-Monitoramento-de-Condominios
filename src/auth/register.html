@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Gestão de Condomínio</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../global.css">
+    <link rel="stylesheet" href="login.css">
+</head>
+<body class="login-page">
+
+    <main class="login-card" style="max-width: 500px;">
+        <div class="login-header">
+            <img src="../imagens/Logo.webp" alt="Logo do Sistema">
+            <h2>Crie sua conta</h2>
+            <p>Junte-se ao seu condomínio digital</p>
+        </div>
+
+        <form onsubmit="handleRegister(event)">
+            <div class="input-group">
+                <label for="name">Nome Completo</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-user"></i>
+                    <input type="text" id="name" placeholder="Ex: Eduardo Bruscagim" required>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="input-group">
+                    <label for="block">Bloco</label>
+                    <div class="input-wrapper">
+                        <i class="fa-regular fa-building"></i>
+                        <input type="text" id="block" placeholder="Ex: A" required>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="unit">Apt/Casa</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-door-open"></i>
+                        <input type="text" id="unit" placeholder="Ex: 402" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="email">E-mail</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input type="email" id="email" placeholder="seu@email.com" required>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="password">Senha</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="password" placeholder="Mínimo 8 caracteres" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full" style="margin-top: 10px;">
+                Criar Conta
+            </button>
+
+            <div class="register-link">
+                Já tem cadastro? <a href="login.html">Fazer Login</a>
+            </div>
+        </form>
+
+        <a href="index.html" class="back-link">
+            <i class="fa-solid fa-arrow-left"></i> Voltar para o site
+        </a>
+    </main>
+
+    <script>
+        function handleRegister(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.innerText = "Criando conta...";
+            setTimeout(() => {
+                alert("Conta criada! Aguarde aprovação.");
+                window.location.href = "login.html";
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

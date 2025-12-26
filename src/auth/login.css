@@ -1,0 +1,188 @@
+/* --- login.css (Apple Glass Edition) --- */
+
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.8);
+    --radius: 24px;
+}
+
+.login-page {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    
+    /* O mesmo fundo "Aura" do Index e Dashboard */
+    background: radial-gradient(circle at 50% 0%, #eff6ff 0%, #f8fafc 60%, #ffffff 100%);
+    background-attachment: fixed;
+    background-size: cover;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    color: #1e293b;
+}
+
+/* O CARD DE VIDRO */
+.login-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px); /* O desfoque pesado da Apple */
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border); /* Borda de luz */
+    
+    padding: 48px 40px; /* Mais espaço interno */
+    border-radius: var(--radius);
+    
+    /* Sombra difusa e elegante */
+    box-shadow: 
+        0 20px 25px -5px rgba(0, 0, 0, 0.05), 
+        0 8px 10px -6px rgba(0, 0, 0, 0.01);
+        
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    
+    /* Animação de entrada suave */
+    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(40px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* --- CABEÇALHO --- */
+.login-header { margin-bottom: 32px; }
+.login-header img { height: 56px; margin-bottom: 20px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05)); }
+.login-header h2 { 
+    color: #0f172a; 
+    font-size: 1.75rem; 
+    margin-bottom: 8px; 
+    font-weight: 800; 
+    letter-spacing: -0.03em; /* Tipografia Tight */
+}
+.login-header p { color: #64748b; font-size: 0.95rem; font-weight: 500; }
+
+/* --- INPUTS MODERNOS --- */
+.input-group { margin-bottom: 24px; text-align: left; }
+.input-group label { 
+    display: block; 
+    margin-bottom: 8px; 
+    font-weight: 600; 
+    color: #334155; 
+    font-size: 0.85rem; 
+    margin-left: 4px;
+}
+
+.input-wrapper { position: relative; }
+.input-wrapper i { 
+    position: absolute; 
+    left: 16px; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    color: #94a3b8; 
+    font-size: 1.1rem;
+    transition: color 0.2s;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 14px 14px 14px 48px; /* Mais padding para conforto */
+    
+    /* Fundo semi-transparente para inputs */
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid #e2e8f0;
+    
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    color: #1e293b;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.2s ease;
+}
+
+/* Foco Estilo Apple (Anel Azul Suave) */
+.input-wrapper input:focus {
+    background: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+.input-wrapper input:focus + i { color: var(--primary); } /* Muda cor do ícone no foco */
+
+
+/* --- AÇÕES (Checkbox e Links) --- */
+.actions { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 30px; 
+    font-size: 0.9rem; 
+}
+.remember-me { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    cursor: pointer; 
+    color: #64748b; 
+    font-weight: 500;
+}
+.forgot-pass { 
+    color: var(--primary); 
+    text-decoration: none; 
+    font-weight: 600; 
+    transition: color 0.2s;
+}
+.forgot-pass:hover { color: var(--primary-hover); }
+
+/* --- BOTÃO PRIMARY COM GLOW --- */
+.btn-full { 
+    width: 100%; 
+    border: none; 
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 1rem; 
+    font-weight: 600;
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--primary);
+    color: white;
+    
+    /* Sombra colorida no botão */
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-full:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.4);
+}
+
+.btn-full:active { transform: scale(0.98); }
+
+/* --- LINKS DE RODAPÉ --- */
+.register-link { margin-top: 24px; font-size: 0.9rem; color: #64748b; font-weight: 500;}
+.register-link a { color: var(--primary); text-decoration: none; font-weight: 700; }
+.register-link a:hover { text-decoration: underline; }
+
+.back-link {
+    margin-top: 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.2s;
+}
+.back-link:hover { 
+    color: #1e293b; 
+    background: rgba(255,255,255,0.5); /* Pílula de fundo no hover */
+}
