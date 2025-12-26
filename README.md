@@ -44,6 +44,7 @@ O projeto foi construído utilizando a "Tríade Web" em sua forma mais pura para
 │   └── index.html      # Home (Vitrine do Produto)
 └── README.md           # Documentação
 /
+```
 
 👨‍💻 Nota do Desenvolvedor
 Embora o site utilize uma linguagem institucional ("Nós", "Nossa Equipe") para simular a autoridade de uma empresa real, este projeto foi idealizado, desenhado e codificado inteiramente por uma única pessoa.
@@ -53,3 +54,4 @@ Eduardo Bruscagim
 Product Design (UI/UX)
 Front-end Engineering
 Backend Architecture (Em breve)
+
