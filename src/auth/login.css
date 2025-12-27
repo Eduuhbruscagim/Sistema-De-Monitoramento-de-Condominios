@@ -1,305 +1,365 @@
-    /* --------------------------------------------------------------------------
+/* ==========================================================================
+   LOGIN.CSS - ESTILO GLOBAL DE AUTENTICAÇÃO
+   Versão: Sênior Final (Responsivo + Selects Ajustados)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
    1. VARIÁVEIS & DESIGN TOKENS
    -------------------------------------------------------------------------- */
-    :root {
-        --primary: #2563eb;
-        --primary-hover: #1d4ed8;
+:root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
 
-        /* Consistência com Dashboard (Light Apple Glass) */
-        --glass-bg: rgba(255, 255, 255, 0.65);
-        --glass-border: rgba(255, 255, 255, 0.8);
-        --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-        /* Sombra difusa premium */
+    /* Consistência com Dashboard (Light Apple Glass) */
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.8);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
 
-        --radius: 24px;
-    }
+    --radius: 24px;
+}
 
-    /* --------------------------------------------------------------------------
+/* --------------------------------------------------------------------------
    2. ESTRUTURA DA PÁGINA
    -------------------------------------------------------------------------- */
-    .login-page {
-        font-family: 'Plus Jakarta Sans', sans-serif;
+.login-page {
+    font-family: 'Plus Jakarta Sans', sans-serif;
 
-        /* BACKGROUND SINCRONIZADO:
-       Ajustado para o mesmo gradiente "Morning Aura" (0% 0%) do Index e Dashboard.
-    */
-        background: radial-gradient(circle at 0% 0%, #eef2ff 0%, #e0e7ff 50%, #f3f4f6 100%);
-        background-attachment: fixed;
-        background-size: cover;
+    /* BACKGROUND GRADIENTE "MORNING AURA" */
+    background: radial-gradient(circle at 0% 0%, #eef2ff 0%, #e0e7ff 50%, #f3f4f6 100%);
+    background-attachment: fixed;
+    background-size: cover;
 
-        /* Centralização Absoluta */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 20px;
-        color: #1e293b;
-    }
+    /* Centralização Absoluta */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px; /* Margem vital pro mobile */
+    color: #1e293b;
+}
 
-    /* --------------------------------------------------------------------------
+/* --------------------------------------------------------------------------
    3. O CARD DE VIDRO (Container)
    -------------------------------------------------------------------------- */
-    .login-card {
-        background: var(--glass-bg);
+.login-card {
+    background: var(--glass-bg);
 
-        /* Efeito Frost */
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
-        border: 1px solid var(--glass-border);
+    /* Efeito Frost */
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
 
-        /* Layout Interno */
-        padding: 48px 40px;
-        border-radius: var(--radius);
-        width: 100%;
-        max-width: 420px;
-        text-align: center;
+    /* Layout Interno */
+    padding: 48px 40px;
+    border-radius: var(--radius);
+    width: 100%;
+    max-width: 500px; /* Aumentei pra 500px pra caber as colunas melhor */
+    text-align: center;
 
-        /* Elevação Consistente */
-        box-shadow: var(--glass-shadow);
+    /* Elevação Consistente */
+    box-shadow: var(--glass-shadow);
 
-        /* Animação de Entrada */
-        animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    /* Animação de Entrada */
+    animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpFade {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
     }
-
-    @keyframes slideUpFade {
-        from {
-            opacity: 0;
-            transform: translateY(40px) scale(0.95);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
     }
+}
 
-    /* --------------------------------------------------------------------------
+/* --------------------------------------------------------------------------
    4. CABEÇALHO (Logo & Título)
    -------------------------------------------------------------------------- */
-    .login-header {
-        margin-bottom: 32px;
+.login-header {
+    margin-bottom: 32px;
+}
+
+.login-header img {
+    height: 56px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
+}
+
+.login-header h2 {
+    color: #0f172a;
+    font-size: 1.75rem;
+    margin-bottom: 8px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.login-header p {
+    color: #64748b;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   5. FORMULÁRIO (Inputs & Selects)
+   -------------------------------------------------------------------------- */
+.input-group {
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #334155;
+    font-size: 0.85rem;
+    margin-left: 4px;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+/* Ícone (Lado Esquerdo) */
+.input-wrapper i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 1.1rem;
+    transition: color 0.2s;
+    z-index: 10; /* Garante que fique acima do campo */
+    pointer-events: none; /* O clique passa pelo ícone e vai pro campo */
+}
+
+/* CAMPO DE TEXTO & SELECT (Estilo Unificado) */
+.input-wrapper input,
+.input-wrapper select {
+    width: 100%;
+    /* 48px na esquerda pro ícone, 14px em cima/baixo */
+    padding: 14px 14px 14px 48px; 
+
+    background: rgba(255, 255, 255, 0.5); /* Fundo Glass */
+    border: 1px solid #e2e8f0;
+
+    border-radius: 12px;
+    font-size: 1rem;
+    outline: none;
+    color: #1e293b;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: all 0.2s ease;
+}
+
+/* Regras Específicas para o SELECT (A Setinha Mágica) */
+.input-wrapper select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    
+    /* Setinha SVG no canto direito */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 16px center; 
+    background-size: 1em;
+    padding-right: 40px; /* Espaço na direita pra seta não ficar em cima do texto */
+}
+
+/* Cor do placeholder do Select ("Selecione...") */
+.input-wrapper select:invalid, 
+.input-wrapper select option[value=""][disabled] {
+    color: #94a3b8;
+}
+
+/* Cor das opções ao abrir */
+.input-wrapper select option {
+    color: #1e293b;
+    background: #fff;
+}
+
+/* Estado de Foco (Para Input e Select) */
+.input-wrapper input:focus,
+.input-wrapper select:focus {
+    background: #fff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+/* Pinta o ícone quando o campo está focado */
+.input-wrapper input:focus+i,
+.input-wrapper select:focus+i {
+    color: var(--primary);
+}
+
+/* --------------------------------------------------------------------------
+   6. AÇÕES (Botões & Links)
+   -------------------------------------------------------------------------- */
+.actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    font-size: 0.9rem;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.forgot-pass {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.forgot-pass:hover {
+    color: var(--primary-hover);
+}
+
+/* Botão Principal */
+.btn-full {
+    width: 100%;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-full:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.4);
+}
+
+.btn-full:active {
+    transform: scale(0.98);
+}
+
+/* --------------------------------------------------------------------------
+   7. RODAPÉ (Links Secundários)
+   -------------------------------------------------------------------------- */
+.register-link {
+    margin-top: 24px;
+    font-size: 0.9rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.register-link a {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.register-link a:hover {
+    text-decoration: underline;
+}
+
+.back-link {
+    margin-top: 32px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 20px;
+    transition: all 0.2s;
+}
+
+.back-link:hover {
+    color: #1e293b;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* --- MENSAGENS DE ERRO/SUCESSO --- */
+.status-msg {
+    display: none;
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.status-msg.error {
+    background: rgba(254, 226, 226, 0.8);
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+
+.status-msg.success {
+    background: rgba(220, 252, 231, 0.8);
+    color: #15803d;
+    border: 1px solid #bbf7d0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --------------------------------------------------------------------------
+   8. RESPONSIVIDADE (A Mágica Final)
+   -------------------------------------------------------------------------- */
+
+/* Layout de Linha (PC - Lado a Lado) */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* Mobile (Telas menores que 480px) */
+@media (max-width: 480px) {
+    
+    .login-card {
+        padding: 32px 20px;
     }
 
-    .login-header img {
-        height: 56px;
-        margin-bottom: 20px;
-        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.05));
+    /* Vira coluna única */
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
     }
 
     .login-header h2 {
-        color: #0f172a;
-        font-size: 1.75rem;
-        margin-bottom: 8px;
-        font-weight: 800;
-        letter-spacing: -0.03em;
+        font-size: 1.5rem;
     }
 
-    .login-header p {
-        color: #64748b;
-        font-size: 0.95rem;
-        font-weight: 500;
+    /* PREVINE ZOOM AUTOMÁTICO NO IPHONE (CRUCIAL) */
+    .input-wrapper input,
+    .input-wrapper select {
+        font-size: 16px !important;
     }
-
-    /* --------------------------------------------------------------------------
-   5. FORMULÁRIO (Inputs)
-   -------------------------------------------------------------------------- */
-    .input-group {
-        margin-bottom: 24px;
-        text-align: left;
-    }
-
-    .input-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-        color: #334155;
-        font-size: 0.85rem;
-        margin-left: 4px;
-    }
-
-    .input-wrapper {
-        position: relative;
-    }
-
-    /* Ícone */
-    .input-wrapper i {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #94a3b8;
-        font-size: 1.1rem;
-        transition: color 0.2s;
-    }
-
-    /* Campo de Texto */
-    .input-wrapper input {
-        width: 100%;
-        padding: 14px 14px 14px 48px;
-        /* Padding extra para o ícone */
-
-        background: rgba(255, 255, 255, 0.5);
-        /* Levemente translúcido */
-        border: 1px solid #e2e8f0;
-
-        border-radius: 12px;
-        font-size: 1rem;
-        outline: none;
-        color: #1e293b;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        transition: all 0.2s ease;
-    }
-
-    /* Estado de Foco */
-    .input-wrapper input:focus {
-        background: #fff;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
-        /* Anel de foco azul */
-    }
-
-    .input-wrapper input:focus+i {
-        color: var(--primary);
-    }
-
-    /* --------------------------------------------------------------------------
-   6. AÇÕES (Botões & Links)
-   -------------------------------------------------------------------------- */
-    .actions {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        font-size: 0.9rem;
-    }
-
-    .remember-me {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        cursor: pointer;
-        color: #64748b;
-        font-weight: 500;
-    }
-
-    .forgot-pass {
-        color: var(--primary);
-        text-decoration: none;
-        font-weight: 600;
-        transition: color 0.2s;
-    }
-
-    .forgot-pass:hover {
-        color: var(--primary-hover);
-    }
-
-    /* Botão Principal */
-    .btn-full {
-        width: 100%;
-        border: none;
-        padding: 14px;
-        border-radius: 12px;
-        font-size: 1rem;
-        font-weight: 600;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: pointer;
-
-        background: var(--primary);
-        color: white;
-        box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .btn-full:hover {
-        background: var(--primary-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.4);
-    }
-
-    .btn-full:active {
-        transform: scale(0.98);
-    }
-
-    /* --------------------------------------------------------------------------
-   7. RODAPÉ (Links Secundários)
-   -------------------------------------------------------------------------- */
-    .register-link {
-        margin-top: 24px;
-        font-size: 0.9rem;
-        color: #64748b;
-        font-weight: 500;
-    }
-
-    .register-link a {
-        color: var(--primary);
-        text-decoration: none;
-        font-weight: 700;
-    }
-
-    .register-link a:hover {
-        text-decoration: underline;
-    }
-
-    .back-link {
-        margin-top: 32px;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: #94a3b8;
-        text-decoration: none;
-        font-size: 0.9rem;
-        font-weight: 600;
-        padding: 8px 16px;
-        border-radius: 20px;
-        transition: all 0.2s;
-    }
-
-    .back-link:hover {
-        color: #1e293b;
-        background: rgba(255, 255, 255, 0.5);
-    }
-
-
-    /* --- MENSAGENS DE ERRO/SUCESSO --- */
-    .status-msg {
-        display: none;
-        /* Escondido por padrão */
-        padding: 12px;
-        border-radius: 12px;
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        text-align: center;
-        animation: fadeIn 0.3s ease;
-    }
-
-    /* Estilo de Erro */
-    .status-msg.error {
-        background: rgba(254, 226, 226, 0.8);
-        /* Vermelho bem claro */
-        color: #b91c1c;
-        border: 1px solid #fecaca;
-    }
-
-    /* Estilo de Sucesso (pra usar depois se quiser) */
-    .status-msg.success {
-        background: rgba(220, 252, 231, 0.8);
-        /* Verde claro */
-        color: #15803d;
-        border: 1px solid #bbf7d0;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+}

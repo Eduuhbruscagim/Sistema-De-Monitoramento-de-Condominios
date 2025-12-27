@@ -9,38 +9,64 @@ document.addEventListener("DOMContentLoaded", async () => {
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // ==========================================
+    // 🍞 SISTEMA DE TOAST (NOTIFICAÇÕES)
+    // ==========================================
+    window.showToast = (message, type = 'success') => {
+        const container = document.getElementById('toast-container');
+        if (!container) return;
+
+        const icons = {
+            success: 'fa-circle-check',
+            error: 'fa-circle-exclamation',
+            info: 'fa-circle-info'
+        };
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `
+            <i class="fa-solid ${icons[type]}"></i>
+            <span>${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(() => {
+            toast.style.animation = 'fadeOut 0.5s forwards';
+            setTimeout(() => toast.remove(), 500);
+        }, 4000);
+
+        toast.addEventListener('click', () => toast.remove());
+    };
+
+    // ==========================================
     // 🔒 0.5 O PORTEIRO & O DONO (AUTH & RBAC)
     // ==========================================
-    
-    // 1. Verifica se está logado
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
         window.location.href = '../auth/login.html';
         return;
     }
 
-    // 2. Descobre QUEM é o usuário
     let perfilUsuario = null;
     try {
         const { data } = await supabase
             .from('moradores')
             .select('*')
             .eq('email', session.user.email)
-            .single();
-        
+            .maybeSingle();
+
         if (data) {
             perfilUsuario = data;
+            atualizarSidebar(perfilUsuario);
+        } else {
+            console.warn("Usuário logado, mas sem perfil no banco.");
         }
     } catch (err) {
-        console.log("Visitante sem perfil.");
+        console.log("Erro ao buscar perfil:", err);
     }
 
-    // Verifica se é o "Dono"
     const souODono = perfilUsuario && perfilUsuario.cargo === 'Dono';
-
-    // 3. Aplica as Regras
     aplicarPermissoes(souODono);
-
 
     // Configura Logout
     const btnLogout = document.querySelector('.logout');
@@ -57,7 +83,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // ==========================================
     let moradoresCache = [];
     let idEditando = null;
-    let idParaDeletar = null;
+    let emailParaDeletar = null;
 
     const tabelaBody = document.getElementById("lista-moradores");
     const modalCadastro = document.getElementById("modal-novo-morador");
@@ -69,48 +95,70 @@ document.addEventListener("DOMContentLoaded", async () => {
     // FUNÇÃO DE PERMISSÕES
     // ==========================================
     function aplicarPermissoes(isBoss) {
-        // Transparência: Todos veem os dados (Money, Ocorrências).
-        // Restrição: Apenas nos botões de ação.
-
         if (!isBoss) {
             console.log("👁️ Modo Transparência: Morador vendo dados, mas sem editar.");
-
-            // 1. Some com o botão de adicionar novo morador
             const btnNovo = document.getElementById("btn-novo-morador");
             if (btnNovo) btnNovo.style.display = "none";
-            
         } else {
             console.log("👑 O Dono CHEGOU! Controle total liberado.");
         }
     }
 
+    // ==========================================
+    // 🎭 MÁSCARAS E FORMATAÇÃO (CELULAR + BLOCO)
+    // ==========================================
+
+    // 1. Celular
+    const inputCelular = document.getElementById("celular");
+    const aplicarMascaraCelular = (event) => {
+        let input = event.target;
+        let v = input.value;
+        v = v.replace(/\D/g, "");
+        v = v.substring(0, 11);
+        v = v.replace(/^(\d{2})(\d)/g, "($1) $2");
+        v = v.replace(/(\d{5})(\d)/, "$1-$2");
+        input.value = v;
+    };
+    if (inputCelular) inputCelular.addEventListener("input", aplicarMascaraCelular);
+
+    // 2. Bloco (Força Maiúsculo visualmente)
+    const inputBloco = document.getElementById("unidade-bloco");
+    if (inputBloco) {
+        inputBloco.addEventListener("input", (e) => {
+            e.target.value = e.target.value.toUpperCase();
+        });
+    }
+
 
     // ==========================================
-    // 2. SISTEMA DE EXCLUSÃO
+    // 2. SISTEMA DE EXCLUSÃO (VIA RPC / SQL)
     // ==========================================
-    window.abrirModalExclusao = (id) => {
-        idParaDeletar = id;
+    window.abrirModalExclusao = (email) => {
+        emailParaDeletar = email;
         modalExclusao.classList.add("active");
     };
 
     window.fecharModalExclusao = () => {
-        idParaDeletar = null;
+        emailParaDeletar = null;
         modalExclusao.classList.remove("active");
     };
 
     document.getElementById("btn-confirm-delete").addEventListener("click", async () => {
-        if (!idParaDeletar) return;
+        if (!emailParaDeletar) return;
 
         const btn = document.getElementById("btn-confirm-delete");
         const textoOriginal = btn.innerText;
-        btn.innerText = "Excluindo...";
+        btn.innerText = "Exterminando...";
         btn.disabled = true;
 
-        const { error } = await supabase.from("moradores").delete().eq("id", idParaDeletar);
+        const { error } = await supabase.rpc('excluir_conta_completa', {
+            email_alvo: emailParaDeletar
+        });
 
         if (error) {
-            alert("Erro: " + error.message);
+            showToast("Erro ao excluir: " + error.message, "error");
         } else {
+            showToast("Usuário removido com sucesso!", "success");
             fecharModalExclusao();
             carregarMoradores();
         }
@@ -121,7 +169,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     // ==========================================
-    // 3. CRUD
+    // 3. CRUD (COM LÓGICA DE UNIDADE/BLOCO)
     // ==========================================
 
     async function carregarMoradores() {
@@ -134,6 +182,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (error) {
             console.error(error);
+            showToast("Erro ao carregar lista.", "error");
             return;
         }
 
@@ -143,9 +192,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     async function salvarMorador(dados) {
-        // Proteção: Só o Dono mexe
         if (!souODono) {
-            alert("Apenas o Dono pode alterar dados.");
+            showToast("Sem permissão. Você não é o Dono.", "error");
             return;
         }
 
@@ -154,20 +202,45 @@ document.addEventListener("DOMContentLoaded", async () => {
         btnSalvar.innerText = "Salvando...";
         btnSalvar.disabled = true;
 
+        // ======================================================
+        // AQUI TÁ O PULO DO GATO: FORMATAÇÃO DA UNIDADE
+        // ======================================================
+        const num = document.getElementById("unidade-num").value.trim();
+        const bl = document.getElementById("unidade-bloco").value.toUpperCase().trim();
+
+        // Junta os dois campos no formato padrão
+        dados.unidade = `${num} - Bloco ${bl}`;
+        // ======================================================
+
         let error = null;
 
         if (idEditando) {
-            const response = await supabase.from("moradores").update(dados).eq("id", idEditando);
+            // EDIÇÃO SINCRONIZADA (AUTH + PUBLIC)
+            const emailAlvo = document.getElementById("email-novo").value;
+
+            console.log("🔄 Sincronizando dados em Public + Auth...");
+            const response = await supabase.rpc('atualizar_morador_completo', {
+                email_alvo: emailAlvo,
+                novo_nome: dados.nome,
+                novo_celular: dados.celular,
+                novo_tipo: dados.tipo,
+                nova_unidade: dados.unidade, // Manda a string formatada
+                novo_status: dados.status,
+                nova_img: dados.img
+            });
             error = response.error;
         } else {
-            dados.cargo = 'morador'; 
+            // CRIANDO NOVO
+            dados.cargo = 'morador';
             const response = await supabase.from("moradores").insert([dados]);
             error = response.error;
         }
 
         if (error) {
-            alert("Erro: " + error.message);
+            console.error(error);
+            showToast("Erro: " + error.message, "error");
         } else {
+            showToast(idEditando ? "Dados atualizados com sucesso!" : "Morador cadastrado com sucesso!", "success");
             await carregarMoradores();
             fecharModalCadastro();
         }
@@ -192,12 +265,10 @@ document.addEventListener("DOMContentLoaded", async () => {
             const badgeClass = m.status === "ok" ? "status-ok" : "status-late";
             const badgeText = m.status === "ok" ? "Em dia" : "Atrasado";
 
-            // Se for o Dono, vê Lápis e Lixeira.
-            // Se for Morador, vê Cadeado. 🔒
-            const botoesAcao = souODono 
+            const botoesAcao = souODono
                 ? `
                     <button class="action-btn" onclick="editarMorador(${m.id})"><i class="fa-regular fa-pen-to-square"></i></button>
-                    <button class="action-btn" onclick="abrirModalExclusao(${m.id})" style="color: #ef4444;"><i class="fa-regular fa-trash-can"></i></button>
+                    <button class="action-btn" onclick="abrirModalExclusao('${m.email}')" style="color: #ef4444;"><i class="fa-regular fa-trash-can"></i></button>
                   `
                 : `<span style="color:#cbd5e1; font-size:0.8rem;" title="Acesso Restrito"><i class="fa-solid fa-lock"></i></span>`;
 
@@ -238,6 +309,14 @@ document.addEventListener("DOMContentLoaded", async () => {
             e.preventDefault();
             idEditando = null;
             formMorador.reset();
+
+            // Libera e limpa o email
+            const emailInput = document.getElementById("email-novo");
+            if (emailInput) {
+                emailInput.disabled = false;
+                emailInput.style.backgroundColor = "rgba(255, 255, 255, 0.5)";
+            }
+
             document.querySelector(".modal-header h3").innerText = "Novo Morador";
             modalCadastro.classList.add("active");
         });
@@ -252,11 +331,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         formMorador.addEventListener("submit", (e) => {
             e.preventDefault();
             const nome = document.getElementById("nome").value;
+
+            const emailInput = document.getElementById("email-novo").value;
+            const emailLimpo = emailInput ? emailInput.toLowerCase().trim() : null;
+
+            // REMOVI 'unidade' DAQUI - Ele é montado dentro do salvarMorador
             const dados = {
                 nome: nome,
+                email: emailLimpo,
                 celular: document.getElementById("celular").value,
                 tipo: document.getElementById("tipo").value,
-                unidade: document.getElementById("unidade").value,
                 status: document.getElementById("status").value,
                 img: `https://ui-avatars.com/api/?name=${nome}&background=random`,
             };
@@ -264,19 +348,39 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     }
 
-    // Edição
+    // Edição (Agora separa Unidade e Bloco)
     window.editarMorador = (id) => {
-        if (!souODono) return; 
+        if (!souODono) return;
 
         const morador = moradoresCache.find((m) => m.id === id);
         if (!morador) return;
 
         idEditando = id;
+
         document.getElementById("nome").value = morador.nome;
+
+        // Email travado na edição
+        const emailInput = document.getElementById("email-novo");
+        emailInput.value = morador.email || "";
+        emailInput.disabled = true;
+        emailInput.style.backgroundColor = "rgba(0, 0, 0, 0.05)";
+
         document.getElementById("celular").value = morador.celular;
         document.getElementById("tipo").value = morador.tipo;
-        document.getElementById("unidade").value = morador.unidade;
         document.getElementById("status").value = morador.status;
+
+        // ==========================================
+        // SEPARA A STRING "101 - Bloco A"
+        // ==========================================
+        if (morador.unidade && morador.unidade.includes(" - Bloco ")) {
+            const partes = morador.unidade.split(" - Bloco ");
+            document.getElementById("unidade-num").value = partes[0];   // 101
+            document.getElementById("unidade-bloco").value = partes[1]; // A
+        } else {
+            // Fallback se o dado for antigo
+            document.getElementById("unidade-num").value = morador.unidade;
+            document.getElementById("unidade-bloco").value = "";
+        }
 
         document.querySelector(".modal-header h3").innerText = "Editar Morador";
         modalCadastro.classList.add("active");
@@ -285,7 +389,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Navegação Sidebar
     const menuLinks = document.querySelectorAll(".sidebar-menu .menu-item");
     const sections = document.querySelectorAll(".view-section");
-    
+
     menuLinks.forEach((link) => {
         link.addEventListener("click", (e) => {
             if (link.classList.contains("logout")) return;
@@ -307,6 +411,42 @@ document.addEventListener("DOMContentLoaded", async () => {
             });
         });
     });
+
+    // ==========================================
+    // 6. UI UPDATE (SIDEBAR)
+    // ==========================================
+    function atualizarSidebar(usuario) {
+        if (!usuario) return;
+
+        console.log("👤 Dados do User:", usuario);
+
+        const nomeEl = document.getElementById("user-name");
+        if (nomeEl) {
+            const nomes = usuario.nome.split(' ');
+            nomeEl.innerText = nomes.length > 1
+                ? `${nomes[0]} ${nomes[nomes.length - 1]}`
+                : nomes[0];
+        }
+
+        const roleEl = document.getElementById("user-role");
+        if (roleEl) {
+            if (usuario.cargo === 'admin' || usuario.cargo === 'Dono') {
+                roleEl.innerText = "Síndico";
+            } else {
+                roleEl.innerText = usuario.tipo || "Condômino";
+            }
+        }
+
+        const avatarEl = document.getElementById("user-avatar");
+        if (avatarEl) {
+            const nomes = usuario.nome.trim().split(" ");
+            let iniciais = nomes[0].substring(0, 2);
+            if (nomes.length > 1) {
+                iniciais = nomes[0][0] + nomes[nomes.length - 1][0];
+            }
+            avatarEl.innerText = iniciais.toUpperCase();
+        }
+    }
 
     carregarMoradores();
 });

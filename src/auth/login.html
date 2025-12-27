@@ -95,7 +95,7 @@
         // Elementos da tela
         const btn = e.target.querySelector("button");
         const feedbackBox = document.getElementById("feedback");
-        const email = document.getElementById("email").value;
+        const email = document.getElementById("email").value.toLowerCase().trim();
         const password = document.getElementById("password").value;
         const originalText = btn.innerText;
 

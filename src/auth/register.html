@@ -39,32 +39,46 @@
           </div>
         </div>
 
-        <div class="input-group">
-          <label for="phone">Celular</label>
-          <div class="input-wrapper">
-            <i class="fa-solid fa-phone"></i>
-            <input
-              type="tel"
-              id="phone"
-              placeholder="(11) 99999-9999"
-              required
-            />
-          </div>
+        <div class="form-row">
+            <div class="input-group">
+                <label for="phone">Celular</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-phone"></i>
+                    <input
+                    type="tel"
+                    id="phone"
+                    placeholder="(11) 99999-9999"
+                    required
+                    />
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label for="userType">Você é?</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-user-tag"></i>
+                    <select id="userType" required>
+                        <option value="" disabled selected>Selecione...</option>
+                        <option value="Proprietário">Proprietário</option>
+                        <option value="Inquilino">Inquilino</option>
+                    </select>
+                </div>
+            </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px">
-          <div class="input-group">
-            <label for="block">Bloco</label>
-            <div class="input-wrapper">
-              <i class="fa-regular fa-building"></i>
-              <input type="text" id="block" placeholder="Ex: A" required />
-            </div>
-          </div>
+        <div class="form-row">
           <div class="input-group">
             <label for="unit">Apt/Casa</label>
             <div class="input-wrapper">
               <i class="fa-solid fa-door-open"></i>
               <input type="text" id="unit" placeholder="Ex: 402" required />
+            </div>
+          </div>
+          <div class="input-group">
+            <label for="block">Bloco</label>
+            <div class="input-wrapper">
+              <i class="fa-regular fa-building"></i>
+              <input type="text" id="block" placeholder="Ex: A" required style="text-transform: uppercase;" />
             </div>
           </div>
         </div>
@@ -89,7 +103,7 @@
             <input
               type="password"
               id="password"
-              placeholder="Mínimo 8 caracteres"
+              placeholder="Mínimo 6 caracteres"
               required
             />
           </div>
@@ -123,6 +137,24 @@
       
       const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+      // ==========================================
+      // 🎭 MÁSCARA DE CELULAR (AUTO-FORMAT)
+      // ==========================================
+      document.getElementById("phone").addEventListener("input", function(e) {
+          let v = e.target.value.replace(/\D/g, ""); // Remove letras
+          v = v.substring(0, 11); // Limita tamanho
+          v = v.replace(/^(\d{2})(\d)/g, "($1) $2"); // Coloca parênteses
+          v = v.replace(/(\d{5})(\d)/, "$1-$2"); // Coloca o traço
+          e.target.value = v;
+      });
+
+      // ==========================================
+      // 🏗️ FORMATAÇÃO DE BLOCO (VISUAL)
+      // ==========================================
+      document.getElementById("block").addEventListener("input", function(e) {
+          e.target.value = e.target.value.toUpperCase(); // Força visual maiúsculo enquanto digita
+      });
+
       async function handleRegister(e) {
         e.preventDefault();
 
@@ -136,10 +168,16 @@
         
         // Coleta dados
         const nome = document.getElementById("name").value;
-        const celular = document.getElementById("phone").value;
-        const bloco = document.getElementById("block").value;
-        const unidade = document.getElementById("unit").value;
-        const email = document.getElementById("email").value;
+        const celular = document.getElementById("phone").value; // Já vem formatado da máscara
+        const tipoUsuario = document.getElementById("userType").value;
+        
+        // PADRONIZAÇÃO DE UNIDADE + BLOCO
+        const bloco = document.getElementById("block").value.toUpperCase().trim(); // Garante maiúsculo no dado final
+        const unidadeNum = document.getElementById("unit").value.trim();
+        const unidadeFinal = `${unidadeNum} - Bloco ${bloco}`;
+
+        // Sanitização: Minúsculo e sem espaços extras
+        const email = document.getElementById("email").value.toLowerCase().trim();
         const password = document.getElementById("password").value;
 
         btn.innerText = "Criando conta...";
@@ -160,20 +198,19 @@
             return;
         }
 
-        // 2. SE DEU CERTO, INSERE NA TABELA "MORADORES" (PUBLIC)
-        // Isso conecta o Login com o Banco de Dados
-        btn.innerText = "Configurando perfil...";
+        // 2. SALVA NA TABELA "MORADORES" (PUBLIC) USANDO INSERT
+        btn.innerText = "Salvando perfil...";
 
         const { error: dbError } = await clienteSupabase
             .from('moradores')
             .insert([
                 {
                     nome: nome,
-                    email: email,       // <--- IMPORTANTE: Linka com o Login
+                    email: email,
                     celular: celular,
-                    unidade: `${unidade} - Bloco ${bloco}`,
-                    tipo: "Morador",
-                    cargo: "morador",   // <--- IMPORTANTE: Nasce como peão (não é Dono)
+                    unidade: unidadeFinal, // <--- Enviando formatado: "402 - Bloco A"
+                    tipo: tipoUsuario,
+                    cargo: "morador",
                     status: "ok",
                     img: `https://ui-avatars.com/api/?name=${nome}&background=random`
                 }
@@ -181,8 +218,7 @@
 
         if (dbError) {
             console.error(dbError);
-            mostrarErro("Conta criada, mas houve erro ao salvar dados do perfil.", btn, originalText, feedbackBox);
-            // Redireciona mesmo com erro no banco, pois o login existe
+            mostrarErro("Conta criada, mas houve erro ao salvar dados do perfil: " + dbError.message, btn, originalText, feedbackBox);
             setTimeout(() => { window.location.href = "login.html"; }, 3000);
         } else {
             // SUCESSO TOTAL
