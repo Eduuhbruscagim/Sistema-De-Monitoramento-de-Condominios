@@ -141,10 +141,10 @@
       // 🎭 MÁSCARA DE CELULAR (AUTO-FORMAT)
       // ==========================================
       document.getElementById("phone").addEventListener("input", function(e) {
-          let v = e.target.value.replace(/\D/g, ""); // Remove letras
-          v = v.substring(0, 11); // Limita tamanho
-          v = v.replace(/^(\d{2})(\d)/g, "($1) $2"); // Coloca parênteses
-          v = v.replace(/(\d{5})(\d)/, "$1-$2"); // Coloca o traço
+          let v = e.target.value.replace(/\D/g, ""); 
+          v = v.substring(0, 11); 
+          v = v.replace(/^(\d{2})(\d)/g, "($1) $2"); 
+          v = v.replace(/(\d{5})(\d)/, "$1-$2"); 
           e.target.value = v;
       });
 
@@ -152,7 +152,7 @@
       // 🏗️ FORMATAÇÃO DE BLOCO (VISUAL)
       // ==========================================
       document.getElementById("block").addEventListener("input", function(e) {
-          e.target.value = e.target.value.toUpperCase(); // Força visual maiúsculo enquanto digita
+          e.target.value = e.target.value.toUpperCase(); 
       });
 
       async function handleRegister(e) {
@@ -168,15 +168,15 @@
         
         // Coleta dados
         const nome = document.getElementById("name").value;
-        const celular = document.getElementById("phone").value; // Já vem formatado da máscara
+        const celular = document.getElementById("phone").value;
         const tipoUsuario = document.getElementById("userType").value;
         
         // PADRONIZAÇÃO DE UNIDADE + BLOCO
-        const bloco = document.getElementById("block").value.toUpperCase().trim(); // Garante maiúsculo no dado final
+        const bloco = document.getElementById("block").value.toUpperCase().trim();
         const unidadeNum = document.getElementById("unit").value.trim();
         const unidadeFinal = `${unidadeNum} - Bloco ${bloco}`;
 
-        // Sanitização: Minúsculo e sem espaços extras
+        // Sanitização
         const email = document.getElementById("email").value.toLowerCase().trim();
         const password = document.getElementById("password").value;
 
@@ -184,51 +184,38 @@
         btn.disabled = true;
         btn.style.opacity = "0.7";
 
-        // 1. CRIA O LOGIN (AUTH)
-        const { data: authData, error: authError } = await clienteSupabase.auth.signUp({
+        // ==================================================================
+        // 🔒 CORREÇÃO DE SEGURANÇA (PASSO 1)
+        // Enviamos tudo para o Auth MetaData.
+        // O Banco (Trigger) que vai se virar para inserir na tabela 'moradores'.
+        // ==================================================================
+        
+        const { data, error } = await clienteSupabase.auth.signUp({
             email: email,
             password: password,
             options: {
-                data: { full_name: nome }
+                data: { 
+                    full_name: nome,
+                    celular: celular,
+                    tipo: tipoUsuario,
+                    unidade: unidadeFinal
+                    // OBS: Não enviamos 'cargo' nem 'status' aqui. Segurança total.
+                }
             }
         });
 
-        if (authError) {
-            mostrarErro(authError.message, btn, originalText, feedbackBox);
-            return;
-        }
-
-        // 2. SALVA NA TABELA "MORADORES" (PUBLIC) USANDO INSERT
-        btn.innerText = "Salvando perfil...";
-
-        const { error: dbError } = await clienteSupabase
-            .from('moradores')
-            .insert([
-                {
-                    nome: nome,
-                    email: email,
-                    celular: celular,
-                    unidade: unidadeFinal, // <--- Enviando formatado: "402 - Bloco A"
-                    tipo: tipoUsuario,
-                    cargo: "morador",
-                    status: "ok",
-                    img: `https://ui-avatars.com/api/?name=${nome}&background=random`
-                }
-            ]);
-
-        if (dbError) {
-            console.error(dbError);
-            mostrarErro("Conta criada, mas houve erro ao salvar dados do perfil: " + dbError.message, btn, originalText, feedbackBox);
-            setTimeout(() => { window.location.href = "login.html"; }, 3000);
+        if (error) {
+            mostrarErro(error.message, btn, originalText, feedbackBox);
         } else {
-            // SUCESSO TOTAL
-            feedbackBox.innerText = "Cadastro completo! Redirecionando...";
+            // SUCESSO
+            // Como usamos Trigger no banco, se o Auth criou, o perfil já existe (ou existirá em milissegundos).
+            feedbackBox.innerText = "Cadastro realizado!.";
             feedbackBox.classList.add("success");
             feedbackBox.style.display = "block";
 
             setTimeout(() => {
                 window.location.href = "login.html";
-            }, 2000);
+            }, 3000);
         }
       }
 
