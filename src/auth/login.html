@@ -77,19 +77,13 @@
       </a>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module">
+      // Importa a instância única configurada
+      import { supabase } from '../services/supabase.js';
 
-    <script>
-      const SUPABASE_URL = "https://dtfzvbtodlyyfokfgllv.supabase.co";
-      const SUPABASE_KEY =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Znp2YnRvZGx5eWZva2ZnbGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MDE0NDUsImV4cCI6MjA4MjM3NzQ0NX0.L6qGW1Bl8k0eQhvJL_IvGE3q7yVPGPELL2beiDLhQ_Y";
-
-      const clienteSupabase = window.supabase.createClient(
-        SUPABASE_URL,
-        SUPABASE_KEY
-      );
-
-      async function handleLogin(e) {
+      // Expõe a função para o escopo global (window)
+      // Necessário porque módulos são isolados e o onsubmit do HTML não veria a função
+      window.handleLogin = async function(e) {
         e.preventDefault();
 
         // Elementos da tela
@@ -101,30 +95,30 @@
 
         // Limpa mensagens anteriores e mostra carregamento
         feedbackBox.style.display = "none";
-        feedbackBox.className = "status-msg"; // Reseta classes
+        feedbackBox.className = "status-msg";
 
         btn.innerText = "Autenticando...";
         btn.disabled = true;
         btn.style.opacity = "0.7";
 
-        // Tenta Logar
-        const { data, error } = await clienteSupabase.auth.signInWithPassword({
+        // Tenta Logar usando o cliente importado
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: email,
           password: password,
         });
 
         if (error) {
-          // ERRO: Mostra na div bonitinho
+          // ERRO
           feedbackBox.innerText = "E-mail ou senha incorretos.";
-          feedbackBox.classList.add("error"); // Fica vermelho
-          feedbackBox.style.display = "block"; // Aparece
+          feedbackBox.classList.add("error");
+          feedbackBox.style.display = "block";
 
           // Reseta o botão
           btn.innerText = originalText;
           btn.disabled = false;
           btn.style.opacity = "1";
         } else {
-          // SUCESSO: Redireciona
+          // SUCESSO
           window.location.href = "../dashboard/dashboard.html";
         }
       }

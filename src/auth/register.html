@@ -129,33 +129,45 @@
       </a>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <script>
-      const SUPABASE_URL = "https://dtfzvbtodlyyfokfgllv.supabase.co";
-      const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Znp2YnRvZGx5eWZva2ZnbGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MDE0NDUsImV4cCI6MjA4MjM3NzQ0NX0.L6qGW1Bl8k0eQhvJL_IvGE3q7yVPGPELL2beiDLhQ_Y";
-      
-      const clienteSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <script type="module">
+      import { supabase } from '../services/supabase.js';
 
       // ==========================================
       // 🎭 MÁSCARA DE CELULAR (AUTO-FORMAT)
       // ==========================================
-      document.getElementById("phone").addEventListener("input", function(e) {
+      const phoneInput = document.getElementById("phone");
+      if (phoneInput) {
+        phoneInput.addEventListener("input", function(e) {
           let v = e.target.value.replace(/\D/g, ""); 
           v = v.substring(0, 11); 
           v = v.replace(/^(\d{2})(\d)/g, "($1) $2"); 
           v = v.replace(/(\d{5})(\d)/, "$1-$2"); 
           e.target.value = v;
-      });
+        });
+      }
 
       // ==========================================
       // 🏗️ FORMATAÇÃO DE BLOCO (VISUAL)
       // ==========================================
-      document.getElementById("block").addEventListener("input", function(e) {
+      const blockInput = document.getElementById("block");
+      if (blockInput) {
+        blockInput.addEventListener("input", function(e) {
           e.target.value = e.target.value.toUpperCase(); 
-      });
+        });
+      }
 
-      async function handleRegister(e) {
+      // Função auxiliar local
+      function mostrarErro(msg, btn, originalText, box) {
+        box.innerText = "Erro: " + msg;
+        box.classList.add("error");
+        box.style.display = "block";
+        btn.innerText = originalText;
+        btn.disabled = false;
+        btn.style.opacity = "1";
+      }
+
+      // Expondo a função principal para o HTML
+      window.handleRegister = async function(e) {
         e.preventDefault();
 
         const btn = e.target.querySelector("button");
@@ -185,12 +197,10 @@
         btn.style.opacity = "0.7";
 
         // ==================================================================
-        // 🔒 CORREÇÃO DE SEGURANÇA (PASSO 1)
-        // Enviamos tudo para o Auth MetaData.
-        // O Banco (Trigger) que vai se virar para inserir na tabela 'moradores'.
+        // 🔒 AUTH SIGNUP
         // ==================================================================
         
-        const { data, error } = await clienteSupabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email: email,
             password: password,
             options: {
@@ -199,7 +209,6 @@
                     celular: celular,
                     tipo: tipoUsuario,
                     unidade: unidadeFinal
-                    // OBS: Não enviamos 'cargo' nem 'status' aqui. Segurança total.
                 }
             }
         });
@@ -208,7 +217,6 @@
             mostrarErro(error.message, btn, originalText, feedbackBox);
         } else {
             // SUCESSO
-            // Como usamos Trigger no banco, se o Auth criou, o perfil já existe (ou existirá em milissegundos).
             feedbackBox.innerText = "Cadastro realizado!";
             feedbackBox.classList.add("success");
             feedbackBox.style.display = "block";
@@ -217,15 +225,6 @@
                 window.location.href = "login.html";
             }, 1500);
         }
-      }
-
-      function mostrarErro(msg, btn, originalText, box) {
-        box.innerText = "Erro: " + msg;
-        box.classList.add("error");
-        box.style.display = "block";
-        btn.innerText = originalText;
-        btn.disabled = false;
-        btn.style.opacity = "1";
       }
     </script>
   </body>

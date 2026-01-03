@@ -619,25 +619,24 @@ body.modal-open{ overflow: hidden; }
     overflow: visible;
   }
 
-  /* base: vira card */
-  .tabela-moradores,
-  .tabela-ocorrencias{
+  /* Remove cabeçalhos */
+  .tabela-moradores thead,
+  .tabela-ocorrencias thead,
+  .tabela-reservas-isolada thead{ display: none; }
+
+  .tabela-moradores, .tabela-ocorrencias, .tabela-reservas-isolada{
     display: block;
     min-width: 0;
   }
 
-  .tabela-moradores thead,
-  .tabela-ocorrencias thead{ display: none; }
-
-  .tabela-moradores tbody,
-  .tabela-ocorrencias tbody{
+  .tabela-moradores tbody, .tabela-ocorrencias tbody, .tabela-reservas-isolada tbody{
     display: flex;
     flex-direction: column;
     gap: 20px;
   }
 
-  .tabela-moradores tr,
-  .tabela-ocorrencias tr{
+  /* Estilo do Card (Tr) - Unificado */
+  .tabela-moradores tr, .tabela-ocorrencias tr, .tabela-reservas-isolada tr{
     display: flex;
     flex-direction: column;
     position: relative;
@@ -649,66 +648,70 @@ body.modal-open{ overflow: hidden; }
     box-shadow: 0 10px 30px -5px rgba(0,0,0,0.05);
   }
 
-  .tabela-moradores td,
-  .tabela-ocorrencias td{
+  .tabela-moradores td, .tabela-ocorrencias td, .tabela-reservas-isolada td{
     display: block;
     padding: 8px 0;
     border: none;
     width: 100%;
     text-align: left;
-    word-break: break-word; /* Previne quebra de layout com textos longos */
+    word-break: break-word;
+    /* COR BASE PARA TEXTO COMUM (Nome, Unidade, etc) - PRETO SUAVE */
+    color: #1e293b !important; 
+    font-weight: 400 !important; /* Respeitando o pedido de peso 400 */
   }
 
-  /* Coluna 1 (destaque) */
+  /* Destaque Data (Primeira linha) */
   .tabela-moradores td:nth-child(1),
-  .tabela-ocorrencias td:nth-child(1){
+  .tabela-ocorrencias td:nth-child(1),
+  .tabela-reservas-isolada td:nth-child(1){
     border-bottom: 1px solid rgba(0,0,0,0.05);
     padding-bottom: 16px;
     margin-bottom: 8px;
   }
 
-  /* AÇÕES (sempre no canto) */
-  .tabela-moradores .td-acao,
-  .tabela-ocorrencias .td-acao{
+  /* Botão de Ação (Flutuante) */
+  .td-acao{
     position: absolute;
     top: 20px;
     right: 16px;
-    width: auto;
-    padding: 0;
+    width: auto !important;
+    padding: 0 !important;
   }
 
-  /* CORREÇÃO SOLICITADA: Espaço antes e depois do dois-pontos.
-     Ex: content: "Unidade :";
-  */
-
-  /* Labels - MORADORES */
-  .tabela-moradores td:nth-child(2)::before{ content: "Unidade :"; }
-  .tabela-moradores td:nth-child(3)::before{ content: "Contato :"; }
-  .tabela-moradores td:nth-child(4)::before{ content: "Situação do Pagamento :"; }
-
-  .tabela-moradores td:nth-child(2)::before,
-  .tabela-moradores td:nth-child(3)::before,
-  .tabela-moradores td:nth-child(4)::before{
+  /* === LABELS (Cinza claro e negrito) === */
+  td::before {
     color: #64748b;
     font-weight: 600;
     font-size: 0.85rem;
     margin-right: 8px;
   }
 
-  /* Labels - OCORRÊNCIAS */
-  .tabela-ocorrencias td:nth-child(2)::before{ content: "Ocorrência :"; }
-  .tabela-ocorrencias td:nth-child(3)::before{ content: "Contato :"; }
-  .tabela-ocorrencias td:nth-child(4)::before{ content: "Status :"; }
+  /* --- OCORRÊNCIAS --- */
+  .tabela-ocorrencias td:nth-child(2)::before{ content: "Ocorrência : "; }
+  .tabela-ocorrencias td:nth-child(3)::before{ content: "Morador : "; }
+  .tabela-ocorrencias td:nth-child(4)::before{ content: "Contato : "; }
+  .tabela-ocorrencias td:nth-child(5)::before{ content: "Status : "; }
 
-  /* Estilização dos labels */
-  .tabela-ocorrencias td:nth-child(2)::before,
-  .tabela-ocorrencias td:nth-child(3)::before,
-  .tabela-ocorrencias td:nth-child(4)::before{
-    color: #64748b;
-    font-weight: 600;
-    font-size: 0.85rem;
-    margin-right: 8px;
+  /* TÍTULO DA OCORRÊNCIA (Preto Escuro) */
+  .tabela-ocorrencias td:nth-child(2) {
+    color: #0f172a !important;
+    font-weight: 400 !important; /* 400 pedido */
   }
+
+  /* --- RESERVAS --- */
+  .tabela-reservas-isolada td:nth-child(2)::before{ content: "Área : "; }
+  .tabela-reservas-isolada td:nth-child(3)::before{ content: "Reservado Por : "; }
+
+  /* ÁREA DA RESERVA (Preto Escuro) */
+  .tabela-reservas-isolada td:nth-child(2) {
+    color: #0f172a !important;
+    font-weight: 400 !important; /* 400 pedido */
+  }
+
+  /* --- MORADORES --- */
+  .tabela-moradores td:nth-child(2)::before{ content: "Unidade : "; }
+  .tabela-moradores td:nth-child(3)::before{ content: "Contato : "; }
+  .tabela-moradores td:nth-child(4)::before{ content: "Situação : "; }
 }
 
 /* --------------------------------------------------------------------------
@@ -965,4 +968,32 @@ body.modal-open{ overflow: hidden; }
     justify-content: center;
     background: rgba(255,255,255,0.6);
   }
+}
+
+/* =========================================================
+   ESTILOS DE CÉLULAS (PADRONIZAÇÃO GLOBAL - PESO 400)
+   ========================================================= */
+
+/* Títulos (Ocorrência, Área, etc) - Escuro, mas Leve */
+.td-titulo {
+  color: #0f172a !important;
+  font-weight: 400 !important; /* Peso 400 (Regular) conforme sua preferência */
+}
+
+/* Texto Secundário (Nome, Unidade) */
+.td-texto {
+  color: #1e293b !important; /* Mantendo o tom "quase preto" que você pediu */
+  font-weight: 400 !important;
+}
+
+/* Datas */
+.td-destaque {
+  color: #334155 !important;
+  font-weight: 400 !important;
+}
+
+/* Garante que nenhum strong ou b perdido estrague o visual */
+.glass-table strong, 
+.glass-table b {
+  font-weight: 400 !important;
 }

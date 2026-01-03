@@ -1,22 +1,26 @@
+import { supabase } from '../services/supabase.js';
+
 document.addEventListener("DOMContentLoaded", async () => {
   // ==========================================
-  // 0. CONFIGURAÇÃO CLIENT
+  // 1. HELPERS & SEGURANÇA
   // ==========================================
-  const SUPABASEURL = "https://dtfzvbtodlyyfokfgllv.supabase.co";
-  const SUPABASEKEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR0Znp2YnRvZGx5eWZva2ZnbGx2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY4MDE0NDUsImV4cCI6MjA4MjM3NzQ0NX0.L6qGW1Bl8k0eQhvJL_IvGE3q7yVPGPELL2beiDLhQ_Y";
+  
+  // Função que blinda seu front-end contra XSS
+  const safe = (str) => {
+    if (!str) return "";
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
 
-  const supabase = window.supabase.createClient(SUPABASEURL, SUPABASEKEY);
-
-  // ==========================================
-  // 1. HELPERS
-  // ==========================================
   const formatBRL = (value) => {
     const n = Number(value || 0);
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
   };
 
-  // Ajuste simples de timezone para date vindo do banco
   const ajustarDataBR = (isoOrDate) => {
     const d = new Date(isoOrDate);
     d.setMinutes(d.getMinutes() + d.getTimezoneOffset());
@@ -61,7 +65,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     },
 
     async listarTodos() {
-      // Para usuário comum vai retornar só o próprio registro (RLS)
       return await supabase.from("moradores").select("*").order("id", { ascending: false });
     },
 
@@ -70,7 +73,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     },
 
     async excluir(email) {
-      // OBS: isso remove só o registro de moradores (não remove o usuário do Auth)
       return await supabase.from("moradores").delete().eq("email", email);
     },
 
@@ -131,7 +133,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const KpiService = {
     async unidades() {
-      // Função SQL: kpi_unidades() returns table(total, ocupadas, vazias)
       return await supabase.rpc("kpi_unidades");
     },
   };
@@ -140,18 +141,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 4. UI REFS
   // ==========================================
   const UI = {
-    // Gerais
     menuLinks: document.querySelectorAll(".sidebar-menu .menu-item"),
     viewSections: document.querySelectorAll(".view-section"),
     toastContainer: document.getElementById("toast-container"),
 
-    // Sidebar
     userAvatar: document.getElementById("user-avatar"),
     userName: document.getElementById("user-name"),
     userRole: document.getElementById("user-role"),
     btnLogout: document.querySelector(".logout"),
 
-    // KPIs / Dashboard
     recentActivities: document.getElementById("recent-activities"),
     kpiSaldo: document.getElementById("kpi-saldo"),
     kpiSaldoSub: document.getElementById("kpi-saldo-sub"),
@@ -164,7 +162,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     kpiUnidades: document.getElementById("kpi-unidades"),
     kpiUnidadesSub: document.getElementById("kpi-unidades-sub"),
 
-    // Moradores
     tabelaMoradores: document.getElementById("lista-moradores"),
     modalCadastroMorador: document.getElementById("modal-novo-morador"),
     modalExclusaoMorador: document.getElementById("modal-confirm-delete"),
@@ -179,11 +176,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     inputUnidadeBloco: document.getElementById("unidade-bloco"),
     inputStatus: document.getElementById("status"),
 
-    // Reservas
     modalExclusaoReserva: document.getElementById("modal-confirm-delete-reserva"),
     btnConfirmDeleteReserva: document.getElementById("btn-confirm-delete-reserva"),
 
-    // Ocorrências
     btnNovaOcorrencia: document.getElementById("btn-nova-ocorrencia"),
     btnNovaOcorrencia2: document.getElementById("btn-nova-ocorrencia-2"),
     modalOcorrencia: document.getElementById("modal-ocorrencia"),
@@ -192,18 +187,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     modalExclusaoOcorrencia: document.getElementById("modal-confirm-delete-ocorrencia"),
     btnConfirmDeleteOcorrencia: document.getElementById("btn-confirm-delete-ocorrencia"),
 
-    // Caixa
     modalCaixa: document.getElementById("modal-caixa"),
     formCaixa: document.getElementById("form-caixa"),
 
-    // Extrato Caixa
     modalCaixaHistorico: document.getElementById("modal-caixa-historico"),
     listaCaixaMovimentos: document.getElementById("lista-caixa-movimentos"),
 
     showToast(message, type = "success") {
       const toast = document.createElement("div");
       toast.className = `toast ${type}`;
-      toast.innerHTML = `${message}`;
+      toast.innerHTML = `${safe(message)}`;
 
       if (this.toastContainer) {
         this.toastContainer.appendChild(toast);
@@ -218,7 +211,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     atualizarSidebar(perfil) {
       if (!perfil) return;
-      const nome = perfil.nome || "Usuário";
+      const nome = safe(perfil.nome || "Usuário");
       if (this.userName) this.userName.innerText = nome;
 
       const cargoAmigavel =
@@ -230,7 +223,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     preencherModalMorador(m) {
       if (!m) return;
-
       if (this.inputNome) this.inputNome.value = m.nome || "";
       if (this.inputEmail) {
         this.inputEmail.value = m.email || "";
@@ -265,6 +257,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const badgeClass = m.status === "ok" ? "status-ok" : "status-late";
         const badgeText = m.status === "ok" ? "Em dia" : "Atrasado";
+        
         const img =
           m.img || `https://ui-avatars.com/api/?name=${encodeURIComponent(m.nome || "User")}&background=random`;
 
@@ -273,7 +266,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             <button class="action-btn btn-editar" data-id="${m.id}" title="Editar">
               <i class="fa-regular fa-pen-to-square"></i>
             </button>
-            <button class="action-btn btn-excluir" data-email="${m.email}" style="color:#ef4444" title="Excluir">
+            <button class="action-btn btn-excluir" data-email="${safe(m.email)}" style="color:#ef4444" title="Excluir">
               <i class="fa-regular fa-trash-can"></i>
             </button>
           `
@@ -281,18 +274,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                <i class="fa-solid fa-lock"></i>
              </button>`;
 
+        // PADRONIZAÇÃO DE CORES (Classes td-titulo e td-texto)
         tr.innerHTML = `
           <td>
             <div class="user-cell">
               <img src="${img}" class="user-avatar" alt="Avatar" />
               <div>
-                <strong>${m.nome || "-"}</strong><br/>
-                <small>${m.tipo || "-"}</small>
+                <strong class="td-titulo">${safe(m.nome || "-")}</strong><br/>
+                <small style="color:#64748b">${safe(m.tipo || "-")}</small>
               </div>
             </div>
           </td>
-          <td><strong>${m.unidade || "-"}</strong></td>
-          <td>${m.celular || "-"}</td>
+          <td class="td-texto"><strong>${safe(m.unidade || "-")}</strong></td>
+          <td class="td-texto">${safe(m.celular || "-")}</td>
           <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
           <td class="td-acao">${actions}</td>
         `;
@@ -307,37 +301,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ==========================================
   const ModalUX = {
     overlays: [],
-
     init() {
       this.overlays = Array.from(document.querySelectorAll(".modal-overlay"));
-
       this.overlays.forEach((overlay) => {
         overlay.addEventListener("click", (e) => {
           if (e.target === overlay) this.close(overlay);
         });
       });
-
       document.addEventListener("keydown", (e) => {
         if (e.key !== "Escape") return;
         const aberto = this.overlays.find((m) => m.classList.contains("active"));
         if (aberto) this.close(aberto);
       });
     },
-
     open(overlay) {
       if (!overlay) return;
       overlay.classList.add("active");
       document.body.classList.add("modal-open");
     },
-
     close(overlay) {
       if (!overlay) return;
       overlay.classList.remove("active");
-
       const algumAberto = this.overlays.some((m) => m.classList.contains("active"));
       if (!algumAberto) document.body.classList.remove("modal-open");
     },
-
     closeAll() {
       this.overlays.forEach((m) => m.classList.remove("active"));
       document.body.classList.remove("modal-open");
@@ -345,7 +332,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   // ==========================================
-  // 6. RESERVAS
+  // 6. RESERVAS (PADRONIZADO)
   // ==========================================
   const UIReserva = {
     modal: document.getElementById("modal-reserva"),
@@ -379,8 +366,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
           UI.showToast("Reserva confirmada!", "success");
           ModalUX.close(this.modal);
-          await this.carregar();
-          await carregarAtividadesRecentes();
         }
 
         btn.innerText = txt;
@@ -441,24 +426,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         const tr = document.createElement("tr");
 
+        const nomeQuem = safe(r.nome_morador || "Morador");
+        const unidadeQuem = r.unidade_morador ? ` — ${safe(r.unidade_morador)}` : "";
+        const infoMorador = `${nomeQuem}${unidadeQuem}`;
+
         if (souDono) {
-          const nomeQuem = r.nome_morador || "Morador";
-          const unidadeQuem = r.unidade_morador || "-";
           tr.innerHTML = `
-            <td data-label="Data" class="td-destaque"><strong>${dataFormatada}</strong></td>
-            <td data-label="Área"><span class="badge-area">${r.area}</span></td>
-            <td data-label="Morador">
-              <span class="reserva-pessoa">
-                <span class="reserva-nome">${nomeQuem}</span>
-                <span class="reserva-unidade">${unidadeQuem}</span>
-              </span>
-            </td>
+            <td data-label="Data" class="td-destaque">${dataFormatada}</td>
+            <td data-label="Área" class="td-titulo">${safe(r.area)}</td>
+            <td data-label="Reservado Por" class="td-texto">${infoMorador}</td>
             <td class="td-acao">${btnAcao}</td>
           `;
         } else {
           tr.innerHTML = `
-            <td data-label="Data" class="td-destaque"><strong>${dataFormatada}</strong></td>
-            <td data-label="Área"><span class="badge-area">${r.area}</span></td>
+            <td data-label="Data" class="td-destaque">${dataFormatada}</td>
+            <td data-label="Área" class="td-titulo">${safe(r.area)}</td>
             <td class="td-acao">${btnAcao}</td>
           `;
         }
@@ -469,26 +451,25 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   // ==========================================
-  // 7. OCORRÊNCIAS
+  // 7. OCORRÊNCIAS (PADRONIZADO)
   // ==========================================
   const UIOcorrencias = {
     async carregar() {
       if (!UI.listaOcorrencias) return;
 
-      // Colspan 5 porque agora temos 5 colunas
       UI.listaOcorrencias.innerHTML =
-        `<tr><td colspan="5" style="text-align:center;padding:18px">Carregando...</td></tr>`;
+        `<tr><td colspan="6" style="text-align:center;padding:18px">Carregando...</td></tr>`;
 
       const { data, error } = await OcorrenciaService.listar();
       if (error) {
         UI.listaOcorrencias.innerHTML =
-          `<tr><td colspan="5" style="text-align:center;padding:18px">Erro ao carregar.</td></tr>`;
+          `<tr><td colspan="6" style="text-align:center;padding:18px">Erro ao carregar.</td></tr>`;
         return;
       }
 
       if (!data || data.length === 0) {
         UI.listaOcorrencias.innerHTML =
-          `<tr><td colspan="5" style="text-align:center;padding:18px">Nenhuma ocorrência registrada.</td></tr>`;
+          `<tr><td colspan="6" style="text-align:center;padding:18px">Nenhuma ocorrência registrada.</td></tr>`;
         return;
       }
 
@@ -496,16 +477,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         .map((o) => {
           const d = new Date(o.created_at).toLocaleDateString("pt-BR");
 
-          // Lógica: Nome/Unidade ficam no Título. Celular fica separado.
-          const nomeReg = o.registrador_nome || "Anônimo";
-          const unidadeReg = o.registrador_unidade ? ` — ${o.registrador_unidade}` : "";
+          const nomeReg = safe(o.registrador_nome || "Anônimo");
+          const unidadeReg = o.registrador_unidade ? ` — ${safe(o.registrador_unidade)}` : "";
+          const tituloSafe = safe(o.titulo);
+          const telSafe = safe(o.registrador_celular || "-");
           
-          // Formatação do subtítulo (Quem + Onde)
-          const infoQuem = `<div style="font-size:0.85rem;color:#64748b;margin-top:4px">${nomeReg}${unidadeReg}</div>`;
-          
-          // Formatação do contato (Somente número)
-          const infoTel = o.registrador_celular || "-";
-
+          const infoMorador = `${nomeReg}${unidadeReg}`;
           const podeExcluir = isAdmin() || o.minha === true;
 
           const btnAcao = podeExcluir
@@ -518,18 +495,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
           return `
             <tr>
-              <td data-label="Data" class="td-destaque"><strong>${d}</strong></td>
+              <td data-label="Data" class="td-destaque">${d}</td>
               
-              <td data-label="Ocorrência">
-                <strong>${o.titulo}</strong>
-                ${infoQuem}
-              </td>
+              <td data-label="Ocorrência" class="td-titulo">${tituloSafe}</td>
 
-              <td data-label="Contato">
-                <span style="font-family:monospace;font-size:0.95rem;color:#475569">${infoTel}</span>
-              </td>
+              <td data-label="Morador" class="td-texto">${infoMorador}</td>
 
-              <td data-label="Status" style="text-transform:capitalize">${o.status || "aberta"}</td>
+              <td data-label="Contato" class="td-texto"><span style="font-family:monospace;">${telSafe}</span></td>
+
+              <td data-label="Status" class="td-texto" style="text-transform:capitalize">${safe(o.status || "aberta")}</td>
+              
               <td class="td-acao">${btnAcao}</td>
             </tr>
           `;
@@ -569,9 +544,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         return `
           <tr>
             <td class="td-destaque"><strong>${d}</strong></td>
-            <td>${tipo}</td>
-            <td><strong>${sinal} ${formatBRL(m.valor)}</strong></td>
-            <td>${m.descricao || "-"}</td>
+            <td class="td-texto">${safe(tipo)}</td>
+            <td class="td-titulo"><strong>${sinal} ${formatBRL(m.valor)}</strong></td>
+            <td class="td-texto">${safe(m.descricao || "-")}</td>
           </tr>
         `;
       })
@@ -584,7 +559,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function carregarSaldo() {
     if (!UI.kpiSaldo) return;
 
-    UI.kpiSaldo.innerText = "Carregando...";
+    UI.kpiSaldo.innerText = "...";
     if (UI.kpiSaldoSub) UI.kpiSaldoSub.innerText = "Atualizando...";
 
     const { data, error } = await CaixaService.saldo();
@@ -595,7 +570,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     UI.kpiSaldo.innerText = formatBRL(data?.saldo || 0);
-    if (UI.kpiSaldoSub) UI.kpiSaldoSub.innerText = "Atualizado";
+    if (UI.kpiSaldoSub) UI.kpiSaldoSub.innerText = "Atualizado em tempo real";
   }
 
   async function carregarKpiOcorrencias() {
@@ -617,9 +592,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function carregarKpiUnidades() {
     if (!UI.kpiUnidades) return;
-
-    UI.kpiUnidades.innerText = "Carregando...";
-    if (UI.kpiUnidadesSub) UI.kpiUnidadesSub.innerText = "Atualizando...";
 
     const { data, error } = await KpiService.unidades();
     if (error || !data || !data[0]) {
@@ -655,7 +627,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       UI.recentActivities.innerHTML = `
         <div class="activity-item">
           <div class="activity-icon bg-orange"><i class="fa-solid fa-triangle-exclamation"></i></div>
-          <div class="activity-info"><h4>Erro</h4><p>${error.message}</p></div>
+          <div class="activity-info"><h4>Erro</h4><p>${safe(error.message)}</p></div>
           <span class="activity-time">Agora</span>
         </div>
       `;
@@ -691,14 +663,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         const quando = diffDias === 0 ? "Hoje" : `Em ${diffDias}d`;
 
         const linhaInfo = souDono
-          ? `${r.nome_morador || "Morador"} — ${r.unidade_morador || "-"}`
+          ? `${safe(r.nome_morador || "Morador")} — ${safe(r.unidade_morador || "-")}`
           : `Data: ${dataBR}`;
 
         return `
           <div class="activity-item">
             <div class="activity-icon bg-blue"><i class="fa-solid fa-calendar-day"></i></div>
             <div class="activity-info">
-              <h4>Reserva: ${r.area}</h4>
+              <h4>Reserva: ${safe(r.area)}</h4>
               <p>${linhaInfo}</p>
             </div>
             <span class="activity-time">${quando}</span>
@@ -706,6 +678,48 @@ document.addEventListener("DOMContentLoaded", async () => {
         `;
       })
       .join("");
+  }
+
+  // ==========================================
+  // REALTIME SETUP
+  // ==========================================
+  function setupRealtime() {
+    const channel = supabase.channel('dashboard-changes');
+
+    channel
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ocorrencias' }, () => {
+        UI.showToast("Nova atualização em Ocorrências", "info");
+        carregarKpiOcorrencias();
+        const view = document.getElementById("view-ocorrencias");
+        if (view && view.classList.contains("active")) UIOcorrencias.carregar();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reservas' }, () => {
+        // Reservas afetam o Widget de Atividades Recentes e a Tabela de Reservas
+        carregarAtividadesRecentes();
+        const view = document.getElementById("view-reservas");
+        if (view && view.classList.contains("active")) UIReserva.carregar();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'caixa_movimentos' }, () => {
+        UI.showToast("Caixa atualizado", "info");
+        carregarSaldo();
+        const modal = document.getElementById("modal-caixa-historico");
+        if (modal && modal.classList.contains("active")) carregarExtratoCaixa();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'moradores' }, () => {
+        // Afeta KPIs de Unidades
+        carregarKpiUnidades();
+        // Atualiza tabela se estiver vendo
+        const view = document.getElementById("view-moradores");
+        if (view && view.classList.contains("active")) {
+           MoradorService.listarTodos().then(({data}) => {
+             State.moradoresCache = data || [];
+             UI.renderizarTabelaMoradores(State.moradoresCache, isAdmin());
+           });
+        }
+      })
+      .subscribe();
+      
+    console.log("📡 Realtime ativo e ouvindo...");
   }
 
   // ==========================================
@@ -757,10 +771,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     State.usuarioLogado = authData.perfil;
     UI.atualizarSidebar(State.usuarioLogado);
 
-    // Botões restritos
     if (UI.btnAjustarCaixa) UI.btnAjustarCaixa.style.display = isAdmin() ? "flex" : "none";
 
-    // Moradores (admin vê todos; morador comum verá só a própria linha)
     const { data: moradores, error: errMoradores } = await MoradorService.listarTodos();
     if (errMoradores) throw new Error(errMoradores.message);
 
@@ -772,9 +784,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     await carregarKPIs();
     await carregarAtividadesRecentes();
+    
+    // INICIA O REALTIME AQUI
+    setupRealtime();
+
   } catch (err) {
     console.error("Erro Fatal:", err);
-    UI.showToast(`Erro ao carregar: ${err.message}`, "error");
+    UI.showToast(`Erro ao carregar: ${safe(err.message)}`, "error");
   }
 
   // ==========================================
@@ -825,7 +841,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Olho do Caixa (todos)
   if (UI.btnVerCaixa) {
     UI.btnVerCaixa.addEventListener("click", async () => {
       await carregarExtratoCaixa();
@@ -833,7 +848,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Ocorrências abrir modal
   const abrirModalOcorrencia = () => {
     if (!UI.modalOcorrencia) return;
     ModalUX.open(UI.modalOcorrencia);
@@ -841,7 +855,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (UI.btnNovaOcorrencia) UI.btnNovaOcorrencia.addEventListener("click", abrirModalOcorrencia);
   if (UI.btnNovaOcorrencia2) UI.btnNovaOcorrencia2.addEventListener("click", abrirModalOcorrencia);
 
-  // Registrar ocorrência
   if (UI.formOcorrencia) {
     UI.formOcorrencia.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -861,11 +874,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         UI.showToast("Ocorrência registrada.", "success");
         UI.formOcorrencia.reset();
         ModalUX.close(UI.modalOcorrencia);
-
-        await carregarKpiOcorrencias();
-
-        const viewOc = document.getElementById("view-ocorrencias");
-        if (viewOc?.classList.contains("active")) await UIOcorrencias.carregar();
+        // O Realtime cuida de atualizar a tela
       }
 
       btn.innerText = txt;
@@ -873,7 +882,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Caixa: abrir modal de lançamento (admin)
   if (UI.btnAjustarCaixa) {
     UI.btnAjustarCaixa.addEventListener("click", () => {
       if (!isAdmin()) return;
@@ -881,7 +889,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Caixa: lançar movimento (admin)
   if (UI.formCaixa) {
     UI.formCaixa.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -906,13 +913,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         UI.showToast("Caixa atualizado.", "success");
         UI.formCaixa.reset();
         ModalUX.close(UI.modalCaixa);
-
-        await carregarSaldo();
-
-        // Se o extrato estiver aberto, atualiza também
-        if (UI.modalCaixaHistorico?.classList.contains("active")) {
-          await carregarExtratoCaixa();
-        }
+        // O Realtime atualiza o saldo e o extrato
       }
 
       btn.innerText = txt;
@@ -920,7 +921,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Confirmar cancelamento de reserva
   if (UI.btnConfirmDeleteReserva) {
     UI.btnConfirmDeleteReserva.addEventListener("click", async () => {
       if (!State.reservaParaDeletar) return;
@@ -931,21 +931,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.disabled = true;
 
       const { error } = await ReservaService.deletar(State.reservaParaDeletar);
-      if (error) UI.showToast(`Erro ao cancelar: ${error.message}`, "error");
+      if (error) UI.showToast(`Erro ao cancelar: ${safe(error.message)}`, "error");
       else UI.showToast("Reserva cancelada.", "info");
 
       ModalUX.close(UI.modalExclusaoReserva);
       State.reservaParaDeletar = null;
-
-      await UIReserva.carregar();
-      await carregarAtividadesRecentes();
 
       btn.innerText = txt;
       btn.disabled = false;
     });
   }
 
-  // Confirmar exclusão de ocorrência
   if (UI.btnConfirmDeleteOcorrencia) {
     UI.btnConfirmDeleteOcorrencia.addEventListener("click", async () => {
       if (!State.ocorrenciaParaDeletar) return;
@@ -956,22 +952,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.disabled = true;
 
       const { error } = await OcorrenciaService.deletar(State.ocorrenciaParaDeletar);
-      if (error) UI.showToast(`Erro ao excluir: ${error.message}`, "error");
+      if (error) UI.showToast(`Erro ao excluir: ${safe(error.message)}`, "error");
       else UI.showToast("Ocorrência excluída.", "info");
 
       ModalUX.close(UI.modalExclusaoOcorrencia);
       State.ocorrenciaParaDeletar = null;
-
-      await carregarKpiOcorrencias();
-      const viewOc = document.getElementById("view-ocorrencias");
-      if (viewOc?.classList.contains("active")) await UIOcorrencias.carregar();
 
       btn.innerText = txt;
       btn.disabled = false;
     });
   }
 
-  // Moradores: editar/excluir (admin)
   if (UI.tabelaMoradores) {
     UI.tabelaMoradores.addEventListener("click", (e) => {
       const btnEditar = e.target.closest(".btn-editar");
@@ -994,7 +985,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Moradores: salvar (admin)
   if (UI.formMorador) {
     UI.formMorador.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -1040,7 +1030,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Moradores: confirmar exclusão (admin)
   if (UI.btnConfirmDeleteMorador) {
     UI.btnConfirmDeleteMorador.addEventListener("click", async () => {
       if (!State.emailParaDeletar) return;
@@ -1056,7 +1045,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.disabled = true;
 
       const { error } = await MoradorService.excluir(State.emailParaDeletar);
-      if (error) UI.showToast(`Erro ao excluir: ${error.message}`, "error");
+      if (error) UI.showToast(`Erro ao excluir: ${safe(error.message)}`, "error");
       else UI.showToast("Morador removido.", "success");
 
       ModalUX.close(UI.modalExclusaoMorador);
@@ -1073,7 +1062,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Máscara celular
   if (UI.inputCelular) {
     UI.inputCelular.addEventListener("input", (e) => {
       let v = e.target.value.replace(/\D/g, "");
@@ -1084,7 +1072,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Bloco uppercase
   if (UI.inputUnidadeBloco) {
     UI.inputUnidadeBloco.addEventListener("input", (e) => {
       e.target.value = e.target.value.toUpperCase();
