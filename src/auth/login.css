@@ -140,7 +140,7 @@
 .input-wrapper select {
     width: 100%;
     /* 48px na esquerda pro ícone, 14px em cima/baixo */
-    padding: 14px 14px 14px 48px; 
+    padding: 14px 14px 14px 48px;
 
     background: rgba(255, 255, 255, 0.5); /* Fundo Glass */
     border: 1px solid #e2e8f0;
@@ -159,17 +159,17 @@
     -moz-appearance: none;
     appearance: none;
     cursor: pointer;
-    
+
     /* Setinha SVG no canto direito */
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
-    background-position: right 16px center; 
+    background-position: right 16px center;
     background-size: 1em;
     padding-right: 40px; /* Espaço na direita pra seta não ficar em cima do texto */
 }
 
 /* Cor do placeholder do Select ("Selecione...") */
-.input-wrapper select:invalid, 
+.input-wrapper select:invalid,
 .input-wrapper select option[value=""][disabled] {
     color: #94a3b8;
 }
@@ -342,7 +342,7 @@
 
 /* Mobile (Telas menores que 480px) */
 @media (max-width: 480px) {
-    
+
     .login-card {
         padding: 32px 20px;
     }

@@ -1,7 +1,7 @@
 /* --------------------------------------------------------------------------
    1. VARIÁVEIS & DESIGN TOKENS
    -------------------------------------------------------------------------- */
-:root {
+   :root {
     /* Cores da Marca */
     --primary: #2563eb;
     --primary-hover: #1d4ed8;
@@ -32,11 +32,20 @@
     box-sizing: border-box;
     font-family: 'Plus Jakarta Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
-    /* Renderização de fonte nítida no Mac */
 }
 
+/* --- SCROLLBAR INVISÍVEL (ESTILO APP NATIVO) --- */
 html {
     scroll-behavior: smooth;
+    /* Firefox */
+    scrollbar-width: none;
+    /* IE e Edge antigos */
+    -ms-overflow-style: none;
+}
+
+/* Chrome, Safari, Opera */
+::-webkit-scrollbar {
+    display: none;
 }
 
 body {
@@ -44,7 +53,6 @@ body {
     background-color: var(--white);
     line-height: 1.6;
     overflow-x: hidden;
-    /* Evita scroll horizontal indesejado */
 }
 
 /* --------------------------------------------------------------------------
@@ -63,7 +71,6 @@ body {
     justify-content: center;
     padding: 12px 28px;
     border-radius: 12px;
-    /* Consistente com os cards */
     font-weight: 600;
     text-decoration: none;
     transition: all 0.3s var(--ease-spring);
@@ -71,7 +78,6 @@ body {
     font-size: 0.95rem;
 }
 
-/* Botão Primário (Ação Principal) */
 .btn-primary {
     background-color: var(--primary);
     color: var(--white);
@@ -83,14 +89,11 @@ body {
     background-color: var(--primary-hover);
     transform: translateY(-2px);
     box-shadow: 0 8px 15px rgba(37, 99, 235, 0.3);
-    /* Glow no hover */
 }
 
-/* Botão Outline (Secundário) */
 .btn-outline {
     background-color: transparent;
     border: 1px solid var(--primary);
-    /* Borda mais fina e elegante */
     color: var(--primary);
     margin-left: 10px;
 }
@@ -101,7 +104,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   4. HEADER & NAVEGAÇÃO (Global)
+   4. HEADER & NAVEGAÇÃO (Legado mantido para fallback se necessário)
    -------------------------------------------------------------------------- */
 header {
     position: fixed;
@@ -122,14 +125,12 @@ header.scrolled {
     box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03);
 }
 
-
 .nav-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-/* Branding */
 .logo {
     display: flex;
     align-items: center;
@@ -147,7 +148,6 @@ header.scrolled {
     width: auto;
 }
 
-/* Links de Navegação */
 nav ul {
     display: flex;
     gap: 32px;
@@ -171,8 +171,6 @@ nav a:hover {
 /* --------------------------------------------------------------------------
    5. MENU MOBILE & RODAPÉ
    -------------------------------------------------------------------------- */
-
-/* Toggle Button (Hamburger) */
 .mobile-toggle {
     display: none;
     font-size: 1.5rem;
@@ -183,10 +181,8 @@ nav a:hover {
     padding: 5px;
 }
 
-/* Footer Global */
 footer {
     border-top: 1px solid rgba(0, 0, 0, 0.05);
-    /* MUDANÇA: Reduzi de 80px/60px para 30px uniformes */
     padding: 30px 0;
     background: var(--white);
     position: relative;
@@ -212,28 +208,23 @@ footer {
 }
 
 /* --------------------------------------------------------------------------
-   6. RESPONSIVIDADE (Breakpoints)
+   6. RESPONSIVIDADE
    -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
     .mobile-toggle {
         display: block;
     }
 
-    /* Menu Mobile estilo "Drawer" */
+    /* Fallback Drawer (caso não use o dock) */
     .nav-menu {
         display: block;
         position: fixed;
         top: 90px;
-        /* Altura aproximada do header */
         left: -100%;
-        /* Escondido por padrão */
         width: 100%;
         height: calc(100vh - 90px);
-
-        /* Vidro Sólido para Mobile */
         background: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(20px);
-
         padding: 40px;
         transition: left 0.4s var(--ease-spring);
         border-top: 1px solid rgba(0, 0, 0, 0.05);
@@ -251,7 +242,6 @@ footer {
 
     .nav-menu a {
         font-size: 1.25rem;
-        /* Fonte maior para toque */
     }
 
     .btn-outline {
@@ -259,7 +249,6 @@ footer {
         margin-top: 10px;
     }
 
-    /* Footer Mobile Stack */
     .footer-content {
         flex-direction: column;
         gap: 30px;

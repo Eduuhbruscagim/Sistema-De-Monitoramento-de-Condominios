@@ -2,18 +2,18 @@
    PROJETO: Condomínio App
    ARQUIVO: sobre.css (Página Sobre)
    AUTOR: Eduardo Bruscagim
-   DESCRIÇÃO: 
-     Estilos isolados para a página "Sobre Nós". Inclui navegação flutuante,
-     storytelling da marca e a seção da equipe (Team Cards).
+   DESCRIÇÃO:
+     Estilos isolados para a página "Sobre Nós" com a Dock "Gelo Fosco"
+     sincronizada com a Landing Page.
    ========================================================================== */
 
-:root {
+   :root {
     --primary: #2563eb;
     --dark: #0f172a;
     --text: #64748b;
     --radius: 24px;
 
-    /* Hard Glass */
+    /* Base Glass Variables (para cards) */
     --glass-bg: rgba(255, 255, 255, 0.45);
     --glass-border: rgba(255, 255, 255, 0.9);
     --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
@@ -27,7 +27,6 @@ body.about-page {
     overflow-x: hidden;
     color: var(--dark);
     background-color: #f3f4f6;
-    /* Cor base caso o gradiente falhe */
     position: relative;
 }
 
@@ -42,41 +41,41 @@ body.about-page::before {
     background: radial-gradient(circle at 0% 0%, #eef2ff 0%, #e0e7ff 50%, #f3f4f6 100%);
     background-size: cover;
     z-index: -1;
-    /* Fica atrás de tudo */
     will-change: transform;
-    /* Dica para a GPU */
 }
 
 /* --------------------------------------------------------------------------
-   2. NAVEGAÇÃO FLUTUANTE (Floating Dock)
+   2. NAVEGAÇÃO FLUTUANTE (Floating Dock - ESTILO IDENTICO AO INDEX)
    -------------------------------------------------------------------------- */
 .glass-nav {
     position: fixed !important;
-    top: 20px;
+    top: 24px;
     left: 50%;
     transform: translateX(-50%);
     width: 90%;
-    max-width: 1200px;
+    max-width: 1100px;
     height: auto !important;
 
     display: flex !important;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 30px !important;
+    padding: 12px 24px !important;
 
-    /* === O SEGREDO DA APPLE === */
+    /* === O SEGREDO DO "GELO FOSCO" (Copiado do Index) === */
 
-    /* 1. Menos branco, mais transparência */
-    background: rgba(255, 255, 255, 0.45) !important;
+    /* 1. Transparência agressiva para o fundo vazar */
+    background: rgba(255, 255, 255, 0.35) !important;
 
-    /* 2. O Pulo do Gato: saturate(180%) faz as cores do fundo "estourarem" no vidro */
-    backdrop-filter: saturate(180%) blur(24px);
-    -webkit-backdrop-filter: saturate(180%) blur(24px);
+    /* 2. Blur Pesado e Saturação para o efeito "Box de Banheiro" */
+    backdrop-filter: saturate(200%) blur(40px);
+    -webkit-backdrop-filter: saturate(200%) blur(40px);
 
-    /* 3. Borda mais sutil (sem border-style, usando shadow interna pra simular espessura do vidro) */
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    /* 3. Borda mais forte para compensar a transparência */
+    border: 1px solid rgba(255, 255, 255, 0.6);
+
+    /* 4. Sombra Profunda + Brilho Interno */
     box-shadow:
-        0 8px 32px 0 rgba(31, 38, 135, 0.1),
+        0 20px 40px -10px rgba(0, 0, 0, 0.1),
         inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 
     border-radius: 100px;
@@ -85,25 +84,30 @@ body.about-page::before {
 }
 
 .nav-logo {
-    height: 32px;
+    height: 40px; /* Ajustado para bater com o index (era 32px) */
     width: auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
 }
 
+/* Botão Voltar Estilizado */
 .back-btn {
     text-decoration: none !important;
-    color: var(--dark) !important;
+    color: var(--text) !important;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     display: flex;
     align-items: center;
     gap: 8px;
-    transition: color 0.2s;
-    background: none !important;
+    transition: all 0.2s;
+    background: transparent !important;
     border: none !important;
+    padding: 8px 16px;
+    border-radius: 12px;
 }
 
 .back-btn:hover {
     color: var(--primary) !important;
+    background: rgba(255, 255, 255, 0.4) !important; /* Feedback de hover sutil */
 }
 
 /* --------------------------------------------------------------------------
@@ -111,7 +115,7 @@ body.about-page::before {
    -------------------------------------------------------------------------- */
 .about-hero {
     position: relative !important;
-    margin: 160px auto 100px !important;
+    margin: 180px auto 100px !important; /* Padding top aumentado por causa da dock */
     padding: 0 20px !important;
     max-width: 1000px;
     text-align: center;
@@ -208,20 +212,9 @@ body.about-page::before {
     margin-bottom: 24px;
 }
 
-.blue {
-    background: #eff6ff;
-    color: var(--primary);
-}
-
-.purple {
-    background: #f3e8ff;
-    color: #9333ea;
-}
-
-.green {
-    background: #dcfce7;
-    color: #16a34a;
-}
+.blue { background: #eff6ff; color: var(--primary); }
+.purple { background: #f3e8ff; color: #9333ea; }
+.green { background: #dcfce7; color: #16a34a; }
 
 .value-card h3 {
     font-size: 1.25rem;
@@ -274,7 +267,6 @@ body.about-page::before {
     background: var(--glass-bg);
     backdrop-filter: blur(20px) saturate(160%);
     -webkit-backdrop-filter: blur(20px) saturate(160%);
-    /* Importante para Safari */
     border: 1px solid var(--glass-border);
 
     border-radius: 24px;
@@ -285,11 +277,7 @@ body.about-page::before {
     transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
         box-shadow 0.3s ease,
         background-color 0.3s ease;
-
-    /* AVISA O NAVEGADOR: "Vou me mexer, prepara a GPU" */
     will-change: transform;
-
-    /* Evita serrilhado no Chrome durante animação */
     transform: translateZ(0);
 }
 
@@ -299,12 +287,10 @@ body.about-page::before {
     box-shadow: 0 20px 30px -5px rgba(0, 0, 0, 0.1);
 }
 
-/* Foto do Membro - Dica Extra */
+/* Foto do Membro */
 .member-photo {
     width: 100%;
-    /* Removemos a altura fixa de 280px que esticava a foto */
     aspect-ratio: 1 / 1;
-    /* Força um quadrado perfeito (ex: 240x240) */
     border-radius: 20px;
     overflow: hidden;
     margin-bottom: 20px;
@@ -315,9 +301,7 @@ body.about-page::before {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Cobre o quadrado sem deformar */
     object-position: center top;
-    /* Foca no rosto (topo/centro) */
     transition: transform 0.5s ease;
     will-change: transform;
 }
@@ -326,7 +310,6 @@ body.about-page::before {
     transform: scale(1.05);
 }
 
-/* Detalhes do Membro */
 .member-card h3 {
     font-size: 1.2rem;
     margin-bottom: 5px;
@@ -360,7 +343,7 @@ body.about-page::before {
 }
 
 /* --------------------------------------------------------------------------
-   6. RODAPÉ (Isolado)
+   6. RODAPÉ
    -------------------------------------------------------------------------- */
 .simple-footer {
     text-align: center;
@@ -376,7 +359,7 @@ body.about-page::before {
    -------------------------------------------------------------------------- */
 @media (max-width: 900px) {
     .about-hero {
-        margin-top: 120px !important;
+        margin-top: 140px !important; /* Ajuste para não bater na dock */
     }
 
     .about-hero h1 {

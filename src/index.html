@@ -34,8 +34,13 @@
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
-    <header>
-      <div class="container nav-wrapper">
+    <!--
+      ARQUITETURA: FLOATING DOCK (Atualizado)
+      Navegação centralizada, flutuante e responsiva.
+      Substitui o header fixo antigo.
+    -->
+    <nav class="floating-dock">
+      <div class="dock-content">
         <a href="#" class="logo">
           <img
             src="imagens/Logo.webp"
@@ -44,29 +49,44 @@
           />
         </a>
 
-        <button class="mobile-toggle" aria-label="Abrir Menu">
-          <i class="fa-solid fa-bars"></i>
-        </button>
+        <!-- Desktop Links -->
+        <ul class="nav-links desktop-only">
+          <li><a href="index.html" class="nav-link active">Início</a></li>
+          <li><a href="#funcionalidades" class="nav-link">Funcionalidades</a></li>
+          <li><a href="#recursos" class="nav-link">Recursos</a></li>
+          <li><a href="about/sobre.html" class="nav-link">Sobre</a></li>
+        </ul>
 
-        <nav class="nav-menu">
-          <ul>
-            <li><a href="index.html">Início</a></li>
-            <li><a href="#funcionalidades">Funcionalidades</a></li>
-            <li><a href="#recursos">Recursos</a></li>
-            <li><a href="about/sobre.html">Sobre</a></li>
-            <li>
-              <a
-                href="auth/login.html"
-                class="btn btn-primary"
-                style="padding: 8px 16px; color: white"
-              >
-                Área de Login
-              </a>
-            </li>
-          </ul>
-        </nav>
+        <div class="dock-actions">
+          <a
+            href="auth/login.html"
+            class="btn btn-primary btn-sm desktop-only"
+          >
+            Área de Login
+          </a>
+
+          <button class="mobile-toggle" aria-label="Abrir Menu">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+        </div>
       </div>
-    </header>
+
+      <!-- Mobile Menu (Drawer acoplado) -->
+      <div class="mobile-menu-drawer">
+        <ul class="mobile-links">
+          <li><a href="index.html">Início</a></li>
+          <li><a href="#funcionalidades">Funcionalidades</a></li>
+          <li><a href="#recursos">Recursos</a></li>
+          <li><a href="about/sobre.html">Sobre</a></li>
+          <li><hr class="divider"></li>
+          <li>
+            <a href="auth/login.html" class="btn btn-primary" style="width: 100%; justify-content: center;">
+              Fazer Login
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
 
     <section id="inicio" class="hero container">
       <div class="hero-content">
@@ -201,18 +221,20 @@
 
     <script>
       /**
-       * Lógica do Menu Mobile (Hamburgerzinho)
+       * 1. Lógica do Menu Mobile (Drawer)
        */
       const mobileBtn = document.querySelector(".mobile-toggle");
-      const navMenu = document.querySelector(".nav-menu");
+      const mobileMenu = document.querySelector(".mobile-menu-drawer");
+      const dock = document.querySelector(".floating-dock");
 
-      if (mobileBtn && navMenu) {
-        mobileBtn.addEventListener("click", () => {
-          navMenu.classList.toggle("active");
+      if (mobileBtn && mobileMenu) {
+        mobileBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          mobileMenu.classList.toggle("active");
+          dock.classList.toggle("menu-open");
 
-          // Troca o ícone de Barras para X
           const icon = mobileBtn.querySelector("i");
-          if (navMenu.classList.contains("active")) {
+          if (mobileMenu.classList.contains("active")) {
             icon.classList.remove("fa-bars");
             icon.classList.add("fa-xmark");
           } else {
@@ -220,29 +242,43 @@
             icon.classList.add("fa-bars");
           }
         });
+
+        // Fechar ao clicar fora
+        document.addEventListener("click", (e) => {
+          if (mobileMenu.classList.contains("active") && !dock.contains(e.target)) {
+            mobileMenu.classList.remove("active");
+            dock.classList.remove("menu-open");
+            const icon = mobileBtn.querySelector("i");
+            icon.classList.remove("fa-xmark");
+            icon.classList.add("fa-bars");
+          }
+        });
       }
 
       /**
-       * Lógica do Botão "Copiar E-mail"
-       * Copia para a area de transferencia e dá feedback visual
+       * 2. Scroll Awareness (Esconder Dock ao rolar para baixo)
+       */
+      let lastScrollTop = 0;
+      const navDock = document.querySelector('.floating-dock');
+
+      
+
+      /**
+       * 3. Botão "Copiar E-mail"
        */
       const copyBtn = document.querySelector(".btn-copy");
 
       if (copyBtn) {
         copyBtn.addEventListener("click", (e) => {
           e.preventDefault();
-
           const email = copyBtn.getAttribute("data-email");
           const originalText = copyBtn.innerText;
 
           navigator.clipboard
             .writeText(email)
             .then(() => {
-              // Feedback de Sucesso
               copyBtn.innerText = "Email Copiado!";
               copyBtn.style.color = "#6b7280";
-
-              // Reseta após 2 segundos
               setTimeout(() => {
                 copyBtn.innerText = originalText;
                 copyBtn.style.backgroundColor = "";
@@ -251,7 +287,6 @@
             })
             .catch((err) => {
               console.error("Erro ao copiar: ", err);
-              alert("Erro ao copiar. O email é: " + email);
             });
         });
       }

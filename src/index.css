@@ -1,52 +1,235 @@
 /* ==========================================================================
    PROJETO: Condomínio App
    ARQUIVO: index.css (Landing Page)
-   AUTOR: Eduardo Bruscagim
-   DESCRIÇÃO: 
-     Folha de estilos principal da Landing Page. Foca em hierarquia visual,
-     efeitos de Glassmorphism (Vidro) e animações 3D de alta performance.
+   DESCRIÇÃO: Estilos da Landing Page com Floating Dock e Correções de Contraste
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. ATMOSFERA GLOBAL (Core)
+   1. ATMOSFERA GLOBAL
    -------------------------------------------------------------------------- */
 body {
-    /* CONCEITO: "Morning Aura" (Sincronizado com Dashboard)
-       Gradiente radial suave vindo do canto superior esquerdo, garantindo
-       que a transição entre a área pública e a área logada seja imperceptível.
-    */
     background: radial-gradient(circle at 0% 0%, #eef2ff 0%, #e0e7ff 50%, #f3f4f6 100%);
     background-attachment: fixed;
-    /* O fundo fixa para criar efeito de paralaxe simples */
     background-size: cover;
 }
 
 /* --------------------------------------------------------------------------
-   2. HERO SECTION (A Primeira Impressão)
+   2. FLOATING DOCK NAVIGATION (A estrela do show)
+   -------------------------------------------------------------------------- */
+.floating-dock {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1100px;
+
+    /* Design System: Vidro EXTREMO (Pedido do Edu) */
+    /* Transparência alta para o fundo vazar */
+    background: rgba(255, 255, 255, 0.35);
+    /* Blur pesado para borrar tudo atrás */
+    backdrop-filter: saturate(200%) blur(40px);
+    -webkit-backdrop-filter: saturate(200%) blur(40px);
+
+    /* Borda mais presente para compensar a transparência */
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+        0 20px 40px -10px rgba(0, 0, 0, 0.1), /* Sombra mais profunda */
+        inset 0 0 0 1px rgba(255, 255, 255, 0.2); /* Brilho interno */
+
+    border-radius: 100px;
+    padding: 12px 24px;
+    z-index: 10000;
+
+    /* Transição suave para esconder/mostrar e expandir */
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    max-height: 70px; /* Altura inicial travada */
+}
+
+/* Classe para esconder o Dock ao rolar para baixo */
+.floating-dock.dock-hidden {
+    transform: translate(-50%, -150%);
+}
+
+/* --- ESTADO ABERTO (MENU MOBILE) --- */
+.floating-dock.menu-open {
+    /* Vidro ainda translúcido, mas legível */
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: saturate(200%) blur(50px); /* Blur absurdo */
+    -webkit-backdrop-filter: saturate(200%) blur(50px);
+
+    border-radius: 32px; /* Curvas maiores ao abrir */
+    max-height: 500px; /* Permite expansão */
+    box-shadow: 0 40px 80px -15px rgba(0,0,0,0.2);
+    border-color: rgba(255, 255, 255, 0.8);
+}
+
+.dock-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Mantém a altura da barra fixa */
+    height: 44px;
+}
+
+.logo-img {
+    height: 40px;
+    width: auto;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+}
+
+.nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-light);
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+    padding: 8px 0;
+    position: relative;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: var(--primary);
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: var(--primary);
+    border-radius: 50%;
+}
+
+.dock-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.btn-sm {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    height: 40px;
+}
+
+/* --- MOBILE DRAWER (Refatorado) --- */
+.mobile-menu-drawer {
+    /* Não use display: none para animar altura */
+    visibility: hidden;
+    opacity: 0;
+    padding: 0;
+    margin-top: 0;
+    transition: all 0.3s ease;
+    transform: translateY(-10px);
+}
+
+.mobile-menu-drawer.active {
+    visibility: visible;
+    opacity: 1;
+    padding: 20px 0 10px 0;
+    margin-top: 10px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    transform: translateY(0);
+}
+
+.mobile-links {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Espaço entre botões */
+    text-align: center;
+}
+
+.mobile-links li {
+    width: 100%;
+}
+
+.mobile-links a {
+    text-decoration: none;
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: block;
+    padding: 14px;
+    border-radius: 16px; /* Botões arredondados */
+    background: transparent;
+    transition: background 0.2s, transform 0.2s;
+}
+
+/* Efeito de toque no mobile */
+.mobile-links a:active,
+.mobile-links a:hover {
+    background: rgba(255, 255, 255, 0.4); /* Hover também é vidro */
+    color: var(--primary);
+    transform: scale(0.98);
+}
+
+/* Botão de Login Mobile destacado */
+.mobile-links .btn-primary {
+    background: var(--primary) !important;
+    color: white !important;
+    margin-top: 10px;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.divider {
+    border: 0;
+    height: 1px;
+    background: rgba(0,0,0,0.05);
+    margin: 5px 0;
+}
+
+.desktop-only { display: flex; }
+.mobile-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--dark);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.mobile-toggle:active {
+    background: rgba(0,0,0,0.05);
+}
+
+/* --------------------------------------------------------------------------
+   3. HERO SECTION (Ajustada para o Dock)
    -------------------------------------------------------------------------- */
 .hero {
-    padding: 160px 0 100px 0;
-    /* Respiro superior generoso para dar imponência */
+    /* Padding aumentado para compensar o Dock flutuante */
+    padding: 180px 0 100px 0;
     display: flex;
     align-items: center;
     gap: 60px;
     min-height: 90vh;
-    /* Garante ocupação de tela quase total na dobra inicial */
-    background: transparent;
-    /* Herda a aura do body */
 }
 
-.hero-content {
-    flex: 1;
-}
+.hero-content { flex: 1; }
 
-/* Tipografia de Impacto */
 .hero h1 {
     font-size: 3.5rem;
     line-height: 1.1;
     color: var(--dark);
     margin-bottom: 24px;
-    /* Tracking negativo (-0.03em) para deixar o título mais compacto e moderno (Estilo Apple) */
     letter-spacing: -0.03em;
 }
 
@@ -55,7 +238,6 @@ body {
     color: var(--text-light);
     margin-bottom: 40px;
     max-width: 500px;
-    /* Limita a largura para garantir leitura confortável (60-70 caracteres) */
 }
 
 /* Apresentação 3D do Produto */
@@ -83,22 +265,15 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   3. "COMO FUNCIONA" (Glass Strip)
+   4. HOW IT WORKS (Vidro Fosco)
    -------------------------------------------------------------------------- */
 .how-it-works {
     padding: 100px 0;
-
-    /* MATERIAL: Vidro Fosco (Light Frost)
-       Camada translúcida que passa por cima do fundo global.
-    */
     background: rgba(255, 255, 255, 0.4);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-
-    /* Bordas sutis para delimitar a área de vidro */
     border-top: 1px solid rgba(255, 255, 255, 0.5);
     border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-
     text-align: center;
 }
 
@@ -116,7 +291,6 @@ body {
     margin-top: 60px;
 }
 
-/* Cards de Passo a Passo */
 .step-card {
     display: flex;
     flex-direction: column;
@@ -127,81 +301,61 @@ body {
 .icon-circle {
     width: 80px;
     height: 80px;
-
-    /* Material: Vidro no Ícone */
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 255, 255, 0.8);
-
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.8rem;
     color: var(--primary);
-
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     margin-bottom: 24px;
-
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Micro-interação: Glow no Hover */
 .step-card:hover .icon-circle {
     transform: scale(1.15) rotate(5deg);
     border-color: var(--primary);
     background: var(--white);
-    /* Fica sólido para contraste */
     box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
-    /* Emite luz azul */
-    color: var(--primary);
 }
 
 /* --------------------------------------------------------------------------
-   4. RECURSOS (Bento Grid Layout)
+   5. FEATURES (Contraste Corrigido)
    -------------------------------------------------------------------------- */
 .features {
     padding: 100px 0;
-    background: transparent;
 }
 
 .features-grid {
     display: grid;
-    /* Grid responsivo automático: preenche o espaço disponível */
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 30px;
     margin-top: 50px;
 }
 
 .feature-card {
-    /* MATERIAL: Vidro Premium
-       Mais blur para suportar conteúdo de texto sobre fundo variável.
-    */
     background: rgba(255, 255, 255, 0.65);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    /* Borda de luz */
+
+    /* CORREÇÃO DE CONTRASTE: Borda mais forte e sombra interna */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02), inset 0 0 0 1px rgba(255,255,255,0.1);
 
     border-radius: var(--radius);
     padding: 32px;
-
-    /* Sombra inicial quase imperceptível (Flat feel) */
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
-
     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
     overflow: hidden;
 }
 
-/* Interação de Elevação */
 .feature-card:hover {
     transform: translateY(-10px);
-    /* Levita */
     background: rgba(255, 255, 255, 0.85);
-    /* Ganha opacidade */
     box-shadow: 0 20px 40px -5px rgba(37, 99, 235, 0.15);
-    /* Sombra difusa colorida */
     border-color: rgba(255, 255, 255, 0.9);
 }
 
@@ -209,7 +363,6 @@ body {
     width: 48px;
     height: 48px;
     background: rgba(37, 99, 235, 0.1);
-    /* Tint azul transparente */
     border-radius: 12px;
     display: flex;
     align-items: center;
@@ -224,7 +377,6 @@ body {
     background: var(--primary);
     color: var(--white);
     transform: scale(1.1) rotate(-5deg);
-    /* Movimento orgânico */
     box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
 }
 
@@ -239,36 +391,28 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   5. RESPONSIVIDADE (Mobile Adaptations)
+   6. RESPONSIVIDADE
    -------------------------------------------------------------------------- */
 @media (max-width: 768px) {
+    .desktop-only { display: none !important; }
+    .mobile-toggle { display: block; }
+
+    .floating-dock {
+        width: 92%;
+        padding: 12px 20px;
+    }
+
     .hero {
         flex-direction: column;
         text-align: center;
-        padding-top: 120px;
+        padding-top: 140px; /* Ajuste para não colidir com o dock */
         gap: 40px;
     }
 
-    .hero h1 {
-        font-size: 2.5rem;
-    }
+    .hero h1 { font-size: 2.5rem; }
 
-    /* Ajuste de perspectiva para telas menores */
-    .hero-image {
-        width: 100%;
-        perspective: 1800px;
-    }
+    .hero-image { width: 100%; perspective: 800px; }
+    .laptop-mockup { transform: rotateY(0) rotateX(0); }
 
-    /* Reduz a elevação no mobile para evitar toques acidentais */
-    .feature-card:hover {
-        transform: translateY(-5px);
-    }
-
-    /* Respeita preferências de redução de movimento do OS */
-    @media (prefers-reduced-motion: reduce) {
-        .laptop-mockup {
-            transition: none;
-            transform: rotateX(-12deg);
-        }
-    }
+    .feature-card:hover { transform: translateY(-5px); }
 }
