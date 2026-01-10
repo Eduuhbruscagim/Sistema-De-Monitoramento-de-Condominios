@@ -275,164 +275,6 @@ body.modal-open {
 }
 
 /* --------------------------------------------------------------------------
-   12. NOTIFICATIONS DROPDOWN (UI FIX)
--------------------------------------------------------------------------- */
-.notifications-wrapper {
-  position: relative;
-  /* Importante: Sem z-index aqui por padrão para não quebrar stacking context */
-  transition: z-index 0.1s;
-}
-
-/* Quando ativo, esse wrapper fura o teto do z-index */
-.notifications-wrapper.highlight-wrapper {
-  z-index: 10000;
-}
-
-.notifications-dropdown {
-  position: absolute;
-  top: 65px;
-  right: -10px;
-  width: 360px;
-  max-height: 450px;
-  overflow-y: auto;
-
-  background: rgba(255, 255, 255, 0.95); /* Quase sólido para contraste */
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* Sombra Profunda */
-  border-radius: 24px;
-
-  padding: 10px;
-  z-index: 10001; /* Acima do wrapper */
-
-  /* Animação */
-  opacity: 0;
-  transform: translateY(-10px) scale(0.95);
-  pointer-events: none;
-  transform-origin: top right;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.notifications-dropdown.active {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: all;
-}
-
-/* MOBILE: Notificações centralizadas (MODAL STYLE) */
-@media (max-width: 768px) {
-  .notifications-dropdown {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    right: auto;
-
-    width: 85vw;
-    max-width: 380px;
-    max-height: 80vh;
-
-    /* Override do transform original para centralizar */
-    transform: translate(-50%, -45%) scale(0.95);
-    transform-origin: center center;
-  }
-
-  .notifications-dropdown.active {
-    transform: translate(-50%, -50%) scale(1);
-  }
-}
-
-/* Notif Items */
-.notif-header {
-  padding: 15px;
-  margin-bottom: 5px;
-  font-weight: 800;
-  color: #0f172a;
-  font-size: 1rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.notif-item {
-  display: flex;
-  gap: 14px;
-  padding: 14px 16px;
-  border-radius: 16px;
-  transition: background 0.2s;
-  cursor: pointer;
-  margin-bottom: 4px;
-}
-
-.notif-item:hover {
-  background: rgba(37, 99, 235, 0.08);
-}
-
-.notif-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 1.1rem;
-  color: #fff;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.notif-content {
-  flex: 1;
-}
-
-.notif-title {
-  display: block;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.notif-desc {
-  display: block;
-  font-size: 0.85rem;
-  color: #64748b;
-  line-height: 1.4;
-  margin-top: 2px;
-}
-
-.notif-time {
-  display: block;
-  font-size: 0.75rem;
-  color: #94a3b8;
-  margin-top: 6px;
-  font-weight: 600;
-}
-
-.bg-notif-blue {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-.bg-notif-purple {
-  background: linear-gradient(135deg, #a855f7, #9333ea);
-}
-.bg-notif-green {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-}
-.bg-notif-orange {
-  background: linear-gradient(135deg, #f97316, #ea580c);
-}
-
-/* Scrollbar Clean */
-.notifications-dropdown::-webkit-scrollbar {
-  width: 6px;
-}
-.notifications-dropdown::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-}
-
-/* --------------------------------------------------------------------------
   4. KPIs
 -------------------------------------------------------------------------- */
 .stats-grid {
@@ -1546,6 +1388,176 @@ body.modal-open {
 .glass-table b {
   font-weight: 400 !important;
 }
+
+/* --------------------------------------------------------------------------
+   12. NOTIFICATIONS DROPDOWN (UNIFIED: DESKTOP & MOBILE SAME POSITION)
+-------------------------------------------------------------------------- */
+.notifications-wrapper {
+  position: relative;
+  z-index: auto;
+}
+
+.notifications-wrapper.highlight-wrapper {
+  z-index: 10000;
+}
+
+.notifications-dropdown {
+  position: absolute;
+  /* POSIÇÃO PADRÃO (DESKTOP & MOBILE) */
+  top: 60px;     /* Logo abaixo do sino */
+  right: -10px;  /* Ancorado à direita do container do sino */
+
+  width: 380px;
+  max-height: 480px;
+  overflow-y: auto;
+
+  /* GLASSMORPHISM - TEXTURA DE VIDRO */
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+    0 25px 50px -12px rgba(0, 0, 0, 0.15);
+
+  border-radius: 24px;
+  padding: 10px;
+  z-index: 10001;
+
+  /* --- FÍSICA E ANIMAÇÃO (APPLE BUTTER) --- */
+  opacity: 0;
+  visibility: hidden;
+  transform-origin: top right; /* Sempre nasce do canto superior direito */
+
+  /* Estado Inicial: Levemente menor e deslocado para cima/esquerda (dentro do sino) */
+  transform: scale(0.94) translate(10px, -20px);
+
+  /* Fechando: Snappy */
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s cubic-bezier(0.4, 0, 1, 1),
+    visibility 0s linear 0.2s;
+}
+
+.notifications-dropdown.active {
+  /* --- ESTADO ABERTO --- */
+  opacity: 1;
+  visibility: visible;
+
+  /* Posição Final: Tamanho real, posição zerada */
+  transform: scale(1) translate(0, 0);
+
+  /* Abrindo: A Mágica Suave (0.45s) */
+  transition:
+    opacity 0.3s ease-out,
+    transform 0.45s cubic-bezier(0.19, 1, 0.22, 1),
+    visibility 0s linear 0s;
+}
+
+/* --------------------------------------------------------------------------
+   AJUSTE MOBILE (APENAS LARGURA)
+   Mantém a posição no topo, mas evita que vaze da tela
+-------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .notifications-dropdown {
+    /* No mobile, o sino pode estar muito na ponta.
+       Ajustamos a largura e a posição 'right' para não criar barra de rolagem horizontal */
+    width: 90vw;       /* Ocupa 90% da largura da tela */
+    max-width: 360px;
+    right: -20px;      /* Empurra um pouco mais pra esquerda para compensar a margem do mobile */
+    top: 70px;         /* Um pouco mais para baixo no mobile para facilitar o toque */
+
+    /* Nota: Não mudamos transform nem transition.
+       A física continua idêntica ao Desktop. */
+  }
+}
+
+/* --------------------------------------------------------------------------
+   ITENS DA LISTA & SCROLLBAR
+-------------------------------------------------------------------------- */
+.notif-header {
+  padding: 16px 16px 12px 16px;
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  margin-bottom: 8px;
+}
+
+.notif-item {
+  display: flex;
+  gap: 16px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  transition: background 0.2s, transform 0.1s;
+  cursor: pointer;
+  margin-bottom: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.notif-item:hover {
+  background: rgba(37, 99, 235, 0.04);
+}
+.notif-item:active {
+  transform: scale(0.98);
+}
+
+.notif-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  color: #fff;
+  box-shadow: 0 4px 10px -2px rgba(0,0,0,0.1);
+}
+
+.notif-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.notif-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 3px;
+  letter-spacing: -0.01em;
+}
+
+.notif-desc {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.35;
+  font-weight: 500;
+}
+
+.notif-time {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 5px;
+  font-weight: 600;
+}
+
+.bg-notif-blue { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+.bg-notif-purple { background: linear-gradient(135deg, #c084fc, #9333ea); }
+.bg-notif-green { background: linear-gradient(135deg, #4ade80, #16a34a); }
+.bg-notif-orange { background: linear-gradient(135deg, #fb923c, #ea580c); }
+
+.notifications-dropdown::-webkit-scrollbar {
+  width: 0px;
+}
+
 
 /* ==========================================================================
    13. SKELETON LOADING (V2: SMOOTH & VISIBLE)
