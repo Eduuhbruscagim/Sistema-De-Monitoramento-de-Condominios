@@ -1,513 +1,736 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel - Condomínio App</title>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel - Condomínio App</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="../global.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
 
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="../global.css">
-  <link rel="stylesheet" href="dashboard.css">
-</head>
+  <body>
+    <div class="dashboard-container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <img src="../imagens/Logo.webp" alt="Logo" class="sidebar-logo" />
+        </div>
 
-<body>
-  <div class="dashboard-container">
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <img src="../imagens/Logo.webp" alt="Logo" class="sidebar-logo" />
-      </div>
+        <nav class="sidebar-menu">
+          <a
+            href="#"
+            class="menu-item active"
+            data-view="view-dashboard"
+            data-title="Visão Geral"
+            aria-label="Visão Geral"
+            title="Visão Geral"
+          >
+            <i class="fa-solid fa-house"></i>
+            <span>Visão Geral</span>
+          </a>
 
-      <nav class="sidebar-menu">
-        <a href="#" class="menu-item active" data-view="view-dashboard" data-title="Visão Geral"
-          aria-label="Visão Geral" title="Visão Geral">
-          <i class="fa-solid fa-house"></i>
-          <span>Visão Geral</span>
-        </a>
+          <a
+            href="#"
+            class="menu-item"
+            data-view="view-ocorrencias"
+            data-title="Ocorrências"
+            aria-label="Ocorrências"
+            title="Ocorrências"
+          >
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Ocorrências</span>
+          </a>
 
-        <a href="#" class="menu-item" data-view="view-ocorrencias" data-title="Ocorrências" aria-label="Ocorrências"
-          title="Ocorrências">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <span>Ocorrências</span>
-        </a>
+          <a
+            href="#"
+            class="menu-item"
+            data-view="view-moradores"
+            data-title="Moradores"
+            aria-label="Moradores"
+            title="Moradores"
+          >
+            <i class="fa-solid fa-users"></i>
+            <span>Moradores</span>
+          </a>
 
-        <a href="#" class="menu-item" data-view="view-moradores" data-title="Moradores" aria-label="Moradores"
-          title="Moradores">
-          <i class="fa-solid fa-users"></i>
-          <span>Moradores</span>
-        </a>
+          <a
+            href="#"
+            class="menu-item"
+            data-view="view-reservas"
+            data-title="Reservas"
+            aria-label="Reservas"
+            title="Reservas"
+          >
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Reservas</span>
+          </a>
+        </nav>
 
-        <a href="#" class="menu-item" data-view="view-reservas" data-title="Reservas" aria-label="Reservas"
-          title="Reservas">
-          <i class="fa-solid fa-calendar-check"></i>
-          <span>Reservas</span>
-        </a>
-      </nav>
+        <div class="sidebar-footer">
+          <a
+            href="#"
+            class="menu-item logout"
+            aria-label="Sair do sistema"
+            title="Sair do sistema"
+          >
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            <span>Sair do Sistema</span>
+          </a>
 
-      <div class="sidebar-footer">
-        <a href="#" class="menu-item logout" aria-label="Sair do sistema" title="Sair do sistema">
-          <i class="fa-solid fa-arrow-right-from-bracket"></i>
-          <span>Sair do Sistema</span>
-        </a>
-
-        <div class="user-profile-mini">
-          <div class="avatar-circle" id="user-avatar">?</div>
-          <div class="user-info">
-            <strong id="user-name">Carregando...</strong>
-            <small id="user-role">...</small>
+          <div class="user-profile-mini">
+            <div class="avatar-circle" id="user-avatar">?</div>
+            <div class="user-info">
+              <strong id="user-name">Carregando...</strong>
+              <small id="user-role">...</small>
+            </div>
           </div>
         </div>
-      </div>
-    </aside>
+      </aside>
 
-    <main class="main-content">
-      <div class="top-bar">
-        <h2 class="page-title">Visão Geral</h2>
+      <main class="main-content">
+        <div class="top-bar">
+          <h2 class="page-title">Visão Geral</h2>
 
-        <div class="top-actions">
-          <button class="icon-btn" aria-label="Notificações" title="Notificações">
-            <i class="fa-regular fa-bell"></i>
-            <span class="notification-dot"></span>
-          </button>
+          <div class="top-actions">
+            <div class="notifications-wrapper">
+              <button
+                class="icon-btn"
+                id="btn-notifications"
+                aria-label="Notificações"
+                title="Notificações"
+              >
+                <i class="fa-regular fa-bell"></i>
+                <span class="notification-dot" id="notif-badge"></span>
+              </button>
 
-          <button class="btn-settings" type="button" title="Configurações">
-            <i class="fa-solid fa-gear"></i>
-            Configurações
-          </button>
+              <div class="notifications-dropdown" id="notifications-panel">
+                <div class="notif-header">
+                  Notificações Recentes
+                  <span
+                    style="font-size: 0.7rem; color: #64748b; font-weight: 500"
+                    >Tempo Real</span
+                  >
+                </div>
+                <div id="notifications-list">
+                  <div
+                    style="
+                      padding: 20px;
+                      text-align: center;
+                      color: #94a3b8;
+                      font-size: 0.9rem;
+                    "
+                  >
+                    Carregando...
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn-settings" type="button" title="Configurações">
+              <i class="fa-solid fa-gear"></i>
+              Configurações
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div id="view-dashboard" class="view-section active">
-        <section class="stats-grid">
-          <div class="stat-card stat-card-kpi">
-            <button type="button" class="kpi-plus" id="btn-ver-caixa" title="Ver movimentações"
-              aria-label="Ver movimentações">
-              <i class="fa-regular fa-eye"></i>
-            </button>
+        <div id="view-dashboard" class="view-section active">
+          <section class="stats-grid">
+            <div class="stat-card stat-card-kpi">
+              <button
+                type="button"
+                class="kpi-plus"
+                id="btn-ver-caixa"
+                title="Ver movimentações"
+                aria-label="Ver movimentações"
+              >
+                <i class="fa-regular fa-eye"></i>
+              </button>
 
-            <button type="button" class="kpi-plus" id="btn-ajustar-caixa" title="Ajustar caixa" style="display:none"
-              aria-label="Ajustar caixa">
-              <i class="fa-solid fa-plus"></i>
-            </button>
+              <button
+                type="button"
+                class="kpi-plus"
+                id="btn-ajustar-caixa"
+                title="Ajustar caixa"
+                style="display: none"
+                aria-label="Ajustar caixa"
+              >
+                <i class="fa-solid fa-plus"></i>
+              </button>
 
-            <div class="icon-box blue">
-              <i class="fa-solid fa-wallet"></i>
+              <div class="icon-box blue">
+                <i class="fa-solid fa-wallet"></i>
+              </div>
+
+              <div>
+                <p class="stat-label">Saldo em Caixa</p>
+                <h3 class="stat-value" id="kpi-saldo">R$ 0,00</h3>
+                <small class="stat-change text-light" id="kpi-saldo-sub"
+                  >Atualizando...</small
+                >
+              </div>
             </div>
 
-            <div>
-              <p class="stat-label">Saldo em Caixa</p>
-              <h3 class="stat-value" id="kpi-saldo">R$ 0,00</h3>
-              <small class="stat-change text-light" id="kpi-saldo-sub">Atualizando...</small>
+            <div class="stat-card stat-card-kpi">
+              <button
+                type="button"
+                class="kpi-plus"
+                id="btn-nova-ocorrencia"
+                title="Nova ocorrência"
+                aria-label="Nova ocorrência"
+              >
+                <i class="fa-solid fa-plus"></i>
+              </button>
+
+              <div class="icon-box purple">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+
+              <div>
+                <p class="stat-label">Ocorrências</p>
+                <h3 class="stat-value" id="kpi-ocorrencias">0 Abertas</h3>
+                <small class="stat-change orange" id="kpi-ocorrencias-sub"
+                  >Atualizando...</small
+                >
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="icon-box green">
+                <i class="fa-solid fa-building-user"></i>
+              </div>
+
+              <div>
+                <p class="stat-label">Unidades</p>
+                <h3 class="stat-value" id="kpi-unidades">0/0</h3>
+                <small class="stat-change text-light" id="kpi-unidades-sub"
+                  >0 Vazias</small
+                >
+              </div>
+            </div>
+          </section>
+
+          <section class="recent-activity">
+            <h3 class="section-title">Atividades Recentes</h3>
+            <div class="activity-list" id="recent-activities"></div>
+          </section>
+        </div>
+
+        <div id="view-ocorrencias" class="view-section">
+          <div style="padding: 10px">
+            <div
+              style="display: flex; justify-content: flex-end; margin: 15px 0"
+            >
+              <button
+                type="button"
+                class="kpi-plus"
+                id="btn-nova-ocorrencia-2"
+                title="Nova ocorrência"
+                aria-label="Nova ocorrência"
+              >
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+
+            <div class="table-container">
+              <table class="glass-table tabela-ocorrencias">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Ocorrência</th>
+                    <th>Morador</th>
+                    <th>Contato</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody id="lista-ocorrencias"></tbody>
+              </table>
             </div>
           </div>
+        </div>
 
-          <div class="stat-card stat-card-kpi">
-            <button type="button" class="kpi-plus" id="btn-nova-ocorrencia" title="Nova ocorrência"
-              aria-label="Nova ocorrência">
-              <i class="fa-solid fa-plus"></i>
-            </button>
-
-            <div class="icon-box purple">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-
-            <div>
-              <p class="stat-label">Ocorrências</p>
-              <h3 class="stat-value" id="kpi-ocorrencias">0 Abertas</h3>
-              <small class="stat-change orange" id="kpi-ocorrencias-sub">Atualizando...</small>
-            </div>
-          </div>
-
-          <div class="stat-card">
-            <div class="icon-box green">
-              <i class="fa-solid fa-building-user"></i>
-            </div>
-
-            <div>
-              <p class="stat-label">Unidades</p>
-              <h3 class="stat-value" id="kpi-unidades">0/0</h3>
-              <small class="stat-change text-light" id="kpi-unidades-sub">0 Vazias</small>
-            </div>
-          </div>
-        </section>
-
-        <section class="recent-activity">
-          <h3 class="section-title">Atividades Recentes</h3>
-          <div class="activity-list" id="recent-activities"></div>
-        </section>
-      </div>
-
-      <div id="view-ocorrencias" class="view-section">
-        <div style="padding:10px">
-          <div style="display:flex;justify-content:flex-end;margin:15px 0">
-            <button type="button" class="kpi-plus" id="btn-nova-ocorrencia-2" title="Nova ocorrência"
-              aria-label="Nova ocorrência">
-              <i class="fa-solid fa-plus"></i>
-            </button>
-          </div>
-
+        <div id="view-moradores" class="view-section">
           <div class="table-container">
-            <table class="glass-table tabela-ocorrencias">
+            <table class="glass-table tabela-moradores">
               <thead>
                 <tr>
-                  <th>Data</th>
-                  <th>Ocorrência</th>
                   <th>Morador</th>
+                  <th>Unidade</th>
                   <th>Contato</th>
-                  <th>Status</th>
+                  <th>Status do Pagamento</th>
                   <th>Ações</th>
                 </tr>
               </thead>
-              <tbody id="lista-ocorrencias"></tbody>
+              <tbody id="lista-moradores"></tbody>
             </table>
           </div>
         </div>
-      </div>
 
-      <div id="view-moradores" class="view-section">
-        <div class="table-container">
-          <table class="glass-table tabela-moradores">
+        <div id="view-reservas" class="view-section">
+          <div
+            class="areas-grid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              gap: 20px;
+              margin-bottom: 40px;
+            "
+          >
+            <div class="stat-card" style="display: block; text-align: center">
+              <div class="icon-box purple" style="margin: 0 auto 15px">
+                <i class="fa-solid fa-champagne-glasses"></i>
+              </div>
+              <h3>Salão de Festas</h3>
+              <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px">
+                Capacidade: 40 pessoas<br />Ar-condicionado e Freezer
+              </p>
+              <button
+                class="btn btn-primary btn-full"
+                onclick="abrirModalReserva('Salão de Festas')"
+              >
+                Reservar Data
+              </button>
+            </div>
+
+            <div class="stat-card" style="display: block; text-align: center">
+              <div
+                class="icon-box orange"
+                style="background: #ffedd5; color: #f97316; margin: 0 auto 15px"
+              >
+                <i class="fa-solid fa-fire-burner"></i>
+              </div>
+              <h3>Churrasqueira</h3>
+              <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px">
+                Capacidade: 15 pessoas<br />Grelha e Área Aberta
+              </p>
+              <button
+                class="btn btn-primary btn-full"
+                onclick="abrirModalReserva('Churrasqueira')"
+              >
+                Reservar Data
+              </button>
+            </div>
+
+            <div class="stat-card" style="display: block; text-align: center">
+              <div class="icon-box green" style="margin: 0 auto 15px">
+                <i class="fa-solid fa-volleyball"></i>
+              </div>
+              <h3>Quadra</h3>
+              <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px">
+                Para esportes e lazer
+              </p>
+              <button
+                class="btn btn-primary btn-full"
+                onclick="abrirModalReserva('Quadra')"
+              >
+                Reservar Data
+              </button>
+            </div>
+          </div>
+
+          <h3 style="margin-bottom: 15px; color: #0f172a">
+            Próximas Ocupações
+          </h3>
+
+          <div class="table-container">
+            <table class="tabela-reservas-isolada">
+              <thead>
+                <tr id="thead-reservas">
+                  <th>Data</th>
+                  <th>Área</th>
+                  <th>Reservado Por</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="lista-reservas"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <div id="modal-novo-morador" class="modal-overlay">
+      <div class="modal-glass">
+        <div class="modal-header">
+          <h3>Editar Morador</h3>
+          <button class="close-modal" type="button" aria-label="Fechar">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form id="form-morador">
+          <div class="input-group">
+            <label>Nome Completo</label>
+            <div class="input-wrapper">
+              <i class="fa-regular fa-user"></i>
+              <input
+                type="text"
+                id="nome"
+                required
+                placeholder="Ex: João da Silva"
+              />
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>E-mail Obrigatório</label>
+            <div class="input-wrapper">
+              <i class="fa-regular fa-envelope"></i>
+              <input
+                type="email"
+                id="email-novo"
+                required
+                placeholder="email@exemplo.com"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="input-group">
+              <label>Celular</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-phone"></i>
+                <input
+                  type="tel"
+                  id="celular"
+                  required
+                  placeholder="(11) 99999-9999"
+                />
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label>Tipo</label>
+              <select id="tipo" class="glass-select">
+                <option value="Proprietário">Proprietário</option>
+                <option value="Inquilino">Inquilino</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="input-group">
+              <label>Unidade</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-door-closed"></i>
+                <input
+                  type="text"
+                  id="unidade-num"
+                  required
+                  placeholder="Ex: 402"
+                />
+              </div>
+            </div>
+
+            <div class="input-group">
+              <label>Bloco</label>
+              <div class="input-wrapper">
+                <i class="fa-regular fa-building"></i>
+                <input
+                  type="text"
+                  id="unidade-bloco"
+                  required
+                  placeholder="Ex: A"
+                  style="text-transform: uppercase"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Pagamento</label>
+            <select id="status" class="glass-select">
+              <option value="ok">Em dia</option>
+              <option value="late">Atrasado</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            style="width: 100%; justify-content: center; margin-top: 10px"
+          >
+            Salvar Dados
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="modal-confirm-delete" class="modal-overlay">
+      <div class="modal-glass" style="max-width: 400px; text-align: center">
+        <div style="font-size: 3rem; color: #ef4444; margin-bottom: 15px">
+          <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <h3>Tem certeza?</h3>
+        <p style="color: #64748b; margin-bottom: 25px">
+          Essa ação apaga o morador da tabela moradores.
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center">
+          <button
+            type="button"
+            class="btn btn-outline"
+            onclick="fecharModalExclusao()"
+            style="border-color: #cbd5e1; color: #64748b"
+          >
+            Cancelar
+          </button>
+          <button
+            id="btn-confirm-delete"
+            type="button"
+            class="btn btn-primary"
+            style="background: #ef4444; border: none; color: white"
+          >
+            Sim, Excluir
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-confirm-delete-reserva" class="modal-overlay">
+      <div class="modal-glass" style="max-width: 420px; text-align: center">
+        <div style="font-size: 3rem; color: #ef4444; margin-bottom: 15px">
+          <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <h3>Cancelar reserva?</h3>
+        <p style="color: #64748b; margin-bottom: 25px">
+          Essa ação vai remover a reserva permanentemente.
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center">
+          <button
+            type="button"
+            class="btn btn-outline"
+            onclick="fecharModalExclusaoReserva()"
+            style="border-color: #cbd5e1; color: #64748b"
+          >
+            Voltar
+          </button>
+          <button
+            id="btn-confirm-delete-reserva"
+            type="button"
+            class="btn btn-primary"
+            style="background: #ef4444; border: none; color: white"
+          >
+            Sim, cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-reserva" class="modal-overlay">
+      <div class="modal-glass">
+        <div class="modal-header">
+          <h3>Nova Reserva</h3>
+          <button
+            class="close-modal-reserva"
+            type="button"
+            aria-label="Fechar"
+            style="
+              background: none;
+              border: none;
+              font-size: 1.5rem;
+              cursor: pointer;
+            "
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form id="form-reserva">
+          <input type="hidden" id="reserva-area" />
+
+          <div
+            style="
+              background: #f1f5f9;
+              padding: 15px;
+              border-radius: 12px;
+              margin-bottom: 20px;
+              text-align: center;
+            "
+          >
+            Você está reservando:
+            <strong
+              id="label-area-selecionada"
+              style="color: var(--primary)"
+            ></strong>
+          </div>
+
+          <div class="input-group">
+            <label>Escolha a Data</label>
+            <div class="input-wrapper">
+              <i class="fa-regular fa-calendar"></i>
+              <input type="date" id="reserva-data" required />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full">
+            Confirmar Agendamento
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="modal-ocorrencia" class="modal-overlay">
+      <div class="modal-glass">
+        <div class="modal-header">
+          <h3>Nova Ocorrência</h3>
+          <button class="close-modal" type="button" aria-label="Fechar">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form id="form-ocorrencia">
+          <div class="input-group">
+            <label>Título</label>
+            <div class="input-wrapper">
+              <i class="fa-regular fa-clipboard"></i>
+              <input
+                id="oc-titulo"
+                type="text"
+                required
+                placeholder="Ex: Lâmpada queimada no corredor"
+              />
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Descrição</label>
+            <div class="input-wrapper">
+              <i class="fa-regular fa-message"></i>
+              <input
+                id="oc-descricao"
+                type="text"
+                required
+                placeholder="Explique o problema..."
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full">
+            Registrar
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="modal-confirm-delete-ocorrencia" class="modal-overlay">
+      <div class="modal-glass" style="max-width: 420px; text-align: center">
+        <div style="font-size: 3rem; color: #ef4444; margin-bottom: 15px">
+          <i class="fa-solid fa-circle-exclamation"></i>
+        </div>
+        <h3>Excluir ocorrência?</h3>
+        <p style="color: #64748b; margin-bottom: 25px">
+          Essa ação vai remover a ocorrência permanentemente.
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center">
+          <button
+            type="button"
+            class="btn btn-outline"
+            onclick="fecharModalExclusaoOcorrencia()"
+            style="border-color: #cbd5e1; color: #64748b"
+          >
+            Cancelar
+          </button>
+          <button
+            id="btn-confirm-delete-ocorrencia"
+            type="button"
+            class="btn btn-primary"
+            style="background: #ef4444; border: none; color: white"
+          >
+            Sim, excluir
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-caixa" class="modal-overlay">
+      <div class="modal-glass">
+        <div class="modal-header">
+          <h3>Ajustar Caixa</h3>
+          <button class="close-modal" type="button" aria-label="Fechar">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <form id="form-caixa">
+          <div class="form-row">
+            <div class="input-group">
+              <label>Tipo</label>
+              <select id="cx-tipo" class="glass-select" required>
+                <option value="entrada">Entrada</option>
+                <option value="saida">Saída</option>
+              </select>
+            </div>
+
+            <div class="input-group">
+              <label>Valor (R$)</label>
+              <div class="input-wrapper">
+                <i class="fa-solid fa-coins"></i>
+                <input
+                  id="cx-valor"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  required
+                  placeholder="Ex: 150.00"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Descrição (visível no extrato)</label>
+            <div class="input-wrapper">
+              <i class="fa-regular fa-pen-to-square"></i>
+              <input
+                id="cx-desc"
+                type="text"
+                placeholder="Ex: Compra de materiais"
+              />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full">
+            Salvar movimentação
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div id="modal-caixa-historico" class="modal-overlay">
+      <div class="modal-glass" style="max-width: 800px">
+        <div class="modal-header">
+          <h3>Extrato do Caixa</h3>
+          <button class="close-modal" type="button" aria-label="Fechar">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="table-container" style="margin-top: 10px">
+          <table class="glass-table tabela-caixa-extrato">
             <thead>
               <tr>
-                <th>Morador</th>
-                <th>Unidade</th>
-                <th>Contato</th>
-                <th>Status do Pagamento</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody id="lista-moradores"></tbody>
-          </table>
-        </div>
-      </div>
-
-      <div id="view-reservas" class="view-section">
-        <div class="areas-grid"
-          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-bottom:40px">
-          <div class="stat-card" style="display:block;text-align:center">
-            <div class="icon-box purple" style="margin:0 auto 15px">
-              <i class="fa-solid fa-champagne-glasses"></i>
-            </div>
-            <h3>Salão de Festas</h3>
-            <p style="color:#64748b;font-size:0.9rem;margin-bottom:20px">
-              Capacidade: 40 pessoas<br />Ar-condicionado e Freezer
-            </p>
-            <button class="btn btn-primary btn-full" onclick="abrirModalReserva('Salão de Festas')">Reservar
-              Data</button>
-          </div>
-
-          <div class="stat-card" style="display:block;text-align:center">
-            <div class="icon-box orange" style="background:#ffedd5;color:#f97316;margin:0 auto 15px">
-              <i class="fa-solid fa-fire-burner"></i>
-            </div>
-            <h3>Churrasqueira</h3>
-            <p style="color:#64748b;font-size:0.9rem;margin-bottom:20px">
-              Capacidade: 15 pessoas<br />Grelha e Área Aberta
-            </p>
-            <button class="btn btn-primary btn-full" onclick="abrirModalReserva('Churrasqueira')">Reservar Data</button>
-          </div>
-
-          <div class="stat-card" style="display:block;text-align:center">
-            <div class="icon-box green" style="margin:0 auto 15px">
-              <i class="fa-solid fa-volleyball"></i>
-            </div>
-            <h3>Quadra</h3>
-            <p style="color:#64748b;font-size:0.9rem;margin-bottom:20px">
-              Para esportes e lazer
-            </p>
-            <button class="btn btn-primary btn-full" onclick="abrirModalReserva('Quadra')">Reservar Data</button>
-          </div>
-        </div>
-
-        <h3 style="margin-bottom:15px;color:#0f172a">Próximas Ocupações</h3>
-
-        <div class="table-container">
-          <table class="tabela-reservas-isolada">
-            <thead>
-              <tr id="thead-reservas">
                 <th>Data</th>
-                <th>Área</th>
-                <th>Reservado Por</th>
-                <th>Ações</th>
+                <th>Tipo</th>
+                <th>Valor</th>
+                <th>Descrição</th>
               </tr>
             </thead>
-            <tbody id="lista-reservas"></tbody>
+            <tbody id="lista-caixa-movimentos"></tbody>
           </table>
         </div>
       </div>
-    </main>
-  </div>
-
-  <div id="modal-novo-morador" class="modal-overlay">
-    <div class="modal-glass">
-      <div class="modal-header">
-        <h3>Editar Morador</h3>
-        <button class="close-modal" type="button" aria-label="Fechar">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <form id="form-morador">
-        <div class="input-group">
-          <label>Nome Completo</label>
-          <div class="input-wrapper">
-            <i class="fa-regular fa-user"></i>
-            <input type="text" id="nome" required placeholder="Ex: João da Silva">
-          </div>
-        </div>
-
-        <div class="input-group">
-          <label>E-mail Obrigatório</label>
-          <div class="input-wrapper">
-            <i class="fa-regular fa-envelope"></i>
-            <input type="email" id="email-novo" required placeholder="email@exemplo.com">
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="input-group">
-            <label>Celular</label>
-            <div class="input-wrapper">
-              <i class="fa-solid fa-phone"></i>
-              <input type="tel" id="celular" required placeholder="(11) 99999-9999">
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label>Tipo</label>
-            <select id="tipo" class="glass-select">
-              <option value="Proprietário">Proprietário</option>
-              <option value="Inquilino">Inquilino</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="input-group">
-            <label>Unidade</label>
-            <div class="input-wrapper">
-              <i class="fa-solid fa-door-closed"></i>
-              <input type="text" id="unidade-num" required placeholder="Ex: 402">
-            </div>
-          </div>
-
-          <div class="input-group">
-            <label>Bloco</label>
-            <div class="input-wrapper">
-              <i class="fa-regular fa-building"></i>
-              <input type="text" id="unidade-bloco" required placeholder="Ex: A" style="text-transform:uppercase">
-            </div>
-          </div>
-        </div>
-
-        <div class="input-group">
-          <label>Pagamento</label>
-          <select id="status" class="glass-select">
-            <option value="ok">Em dia</option>
-            <option value="late">Atrasado</option>
-          </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:10px">
-          Salvar Dados
-        </button>
-      </form>
     </div>
-  </div>
 
-  <div id="modal-confirm-delete" class="modal-overlay">
-    <div class="modal-glass" style="max-width:400px;text-align:center">
-      <div style="font-size:3rem;color:#ef4444;margin-bottom:15px">
-        <i class="fa-solid fa-circle-exclamation"></i>
-      </div>
-      <h3>Tem certeza?</h3>
-      <p style="color:#64748b;margin-bottom:25px">Essa ação apaga o morador da tabela moradores.</p>
-      <div style="display:flex;gap:10px;justify-content:center">
-        <button type="button" class="btn btn-outline" onclick="fecharModalExclusao()"
-          style="border-color:#cbd5e1;color:#64748b">
-          Cancelar
-        </button>
-        <button id="btn-confirm-delete" type="button" class="btn btn-primary"
-          style="background:#ef4444;border:none;color:white">
-          Sim, Excluir
-        </button>
-      </div>
-    </div>
-  </div>
+    <div id="toast-container"></div>
 
-  <div id="modal-confirm-delete-reserva" class="modal-overlay">
-    <div class="modal-glass" style="max-width:420px;text-align:center">
-      <div style="font-size:3rem;color:#ef4444;margin-bottom:15px">
-        <i class="fa-solid fa-circle-exclamation"></i>
-      </div>
-      <h3>Cancelar reserva?</h3>
-      <p style="color:#64748b;margin-bottom:25px">Essa ação vai remover a reserva permanentemente.</p>
-      <div style="display:flex;gap:10px;justify-content:center">
-        <button type="button" class="btn btn-outline" onclick="fecharModalExclusaoReserva()"
-          style="border-color:#cbd5e1;color:#64748b">
-          Voltar
-        </button>
-        <button id="btn-confirm-delete-reserva" type="button" class="btn btn-primary"
-          style="background:#ef4444;border:none;color:white">
-          Sim, cancelar
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div id="modal-reserva" class="modal-overlay">
-    <div class="modal-glass">
-      <div class="modal-header">
-        <h3>Nova Reserva</h3>
-        <button class="close-modal-reserva" type="button" aria-label="Fechar"
-          style="background:none;border:none;font-size:1.5rem;cursor:pointer">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <form id="form-reserva">
-        <input type="hidden" id="reserva-area">
-
-        <div style="background:#f1f5f9;padding:15px;border-radius:12px;margin-bottom:20px;text-align:center">
-          Você está reservando:
-          <strong id="label-area-selecionada" style="color:var(--primary)"></strong>
-        </div>
-
-        <div class="input-group">
-          <label>Escolha a Data</label>
-          <div class="input-wrapper">
-            <i class="fa-regular fa-calendar"></i>
-            <input type="date" id="reserva-data" required>
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-full">Confirmar Agendamento</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="modal-ocorrencia" class="modal-overlay">
-    <div class="modal-glass">
-      <div class="modal-header">
-        <h3>Nova Ocorrência</h3>
-        <button class="close-modal" type="button" aria-label="Fechar">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <form id="form-ocorrencia">
-        <div class="input-group">
-          <label>Título</label>
-          <div class="input-wrapper">
-            <i class="fa-regular fa-clipboard"></i>
-            <input id="oc-titulo" type="text" required placeholder="Ex: Lâmpada queimada no corredor">
-          </div>
-        </div>
-
-        <div class="input-group">
-          <label>Descrição</label>
-          <div class="input-wrapper">
-            <i class="fa-regular fa-message"></i>
-            <input id="oc-descricao" type="text" required placeholder="Explique o problema...">
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-full">Registrar</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="modal-confirm-delete-ocorrencia" class="modal-overlay">
-    <div class="modal-glass" style="max-width:420px;text-align:center">
-      <div style="font-size:3rem;color:#ef4444;margin-bottom:15px">
-        <i class="fa-solid fa-circle-exclamation"></i>
-      </div>
-      <h3>Excluir ocorrência?</h3>
-      <p style="color:#64748b;margin-bottom:25px">Essa ação vai remover a ocorrência permanentemente.</p>
-      <div style="display:flex;gap:10px;justify-content:center">
-        <button type="button" class="btn btn-outline" onclick="fecharModalExclusaoOcorrencia()"
-          style="border-color:#cbd5e1;color:#64748b">
-          Cancelar
-        </button>
-        <button id="btn-confirm-delete-ocorrencia" type="button" class="btn btn-primary"
-          style="background:#ef4444;border:none;color:white">
-          Sim, excluir
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <div id="modal-caixa" class="modal-overlay">
-    <div class="modal-glass">
-      <div class="modal-header">
-        <h3>Ajustar Caixa</h3>
-        <button class="close-modal" type="button" aria-label="Fechar">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <form id="form-caixa">
-        <div class="form-row">
-          <div class="input-group">
-            <label>Tipo</label>
-            <select id="cx-tipo" class="glass-select" required>
-              <option value="entrada">Entrada</option>
-              <option value="saida">Saída</option>
-            </select>
-          </div>
-
-          <div class="input-group">
-            <label>Valor (R$)</label>
-            <div class="input-wrapper">
-              <i class="fa-solid fa-coins"></i>
-              <input id="cx-valor" type="number" step="0.01" min="0.01" required placeholder="Ex: 150.00">
-            </div>
-          </div>
-        </div>
-
-        <div class="input-group">
-          <label>Descrição (visível no extrato)</label>
-          <div class="input-wrapper">
-            <i class="fa-regular fa-pen-to-square"></i>
-            <input id="cx-desc" type="text" placeholder="Ex: Compra de materiais">
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-full">Salvar movimentação</button>
-      </form>
-    </div>
-  </div>
-
-  <div id="modal-caixa-historico" class="modal-overlay">
-    <div class="modal-glass" style="max-width:800px">
-      <div class="modal-header">
-        <h3>Extrato do Caixa</h3>
-        <button class="close-modal" type="button" aria-label="Fechar">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <div class="table-container" style="margin-top:10px">
-        <table class="glass-table tabela-caixa-extrato">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Tipo</th>
-              <th>Valor</th>
-              <th>Descrição</th>
-            </tr>
-          </thead>
-          <tbody id="lista-caixa-movimentos"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast-container"></div>
-
-  <script type="module" src="dashboard.js"></script>
-</body>
-
+    <script type="module" src="dashboard.js"></script>
+  </body>
 </html>

@@ -24,6 +24,27 @@ body{
 
 body.modal-open{ overflow: hidden; }
 
+/* Overlay de Blur (O Segredo do Efeito Apple) */
+#blur-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.2); /* Tint leve */
+  backdrop-filter: blur(8px); /* O Blur acontece AQUI */
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 9998; /* Altíssimo, mas menor que o dropdown */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+#blur-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
 .dashboard-container{
   display: flex;
   min-height: 100vh;
@@ -236,6 +257,147 @@ body.modal-open{ overflow: hidden; }
   border: 2px solid #fff;
   box-shadow: 0 0 0 2px rgba(255,255,255,0.5);
 }
+
+/* --------------------------------------------------------------------------
+   12. NOTIFICATIONS DROPDOWN (UI FIX)
+-------------------------------------------------------------------------- */
+.notifications-wrapper {
+  position: relative;
+  /* Importante: Sem z-index aqui por padrão para não quebrar stacking context */
+  transition: z-index 0.1s;
+}
+
+/* Quando ativo, esse wrapper fura o teto do z-index */
+.notifications-wrapper.highlight-wrapper {
+  z-index: 10000;
+}
+
+.notifications-dropdown {
+  position: absolute;
+  top: 65px;
+  right: -10px;
+  width: 360px;
+  max-height: 450px;
+  overflow-y: auto;
+
+  background: rgba(255, 255, 255, 0.95); /* Quase sólido para contraste */
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); /* Sombra Profunda */
+  border-radius: 24px;
+
+  padding: 10px;
+  z-index: 10001; /* Acima do wrapper */
+
+  /* Animação */
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+  pointer-events: none;
+  transform-origin: top right;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notifications-dropdown.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: all;
+}
+
+/* MOBILE: Notificações centralizadas (MODAL STYLE) */
+@media (max-width: 768px) {
+  .notifications-dropdown {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    right: auto;
+
+    width: 85vw;
+    max-width: 380px;
+    max-height: 80vh;
+
+    /* Override do transform original para centralizar */
+    transform: translate(-50%, -45%) scale(0.95);
+    transform-origin: center center;
+  }
+
+  .notifications-dropdown.active {
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* Notif Items */
+.notif-header {
+  padding: 15px;
+  margin-bottom: 5px;
+  font-weight: 800;
+  color: #0f172a;
+  font-size: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.notif-item {
+  display: flex;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  transition: background 0.2s;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+
+.notif-item:hover { background: rgba(37, 99, 235, 0.08); }
+
+.notif-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  color: #fff;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.notif-content { flex: 1; }
+
+.notif-title {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.notif-desc {
+  display: block;
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin-top: 2px;
+}
+
+.notif-time {
+  display: block;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  margin-top: 6px;
+  font-weight: 600;
+}
+
+.bg-notif-blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.bg-notif-purple { background: linear-gradient(135deg, #a855f7, #9333ea); }
+.bg-notif-green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.bg-notif-orange { background: linear-gradient(135deg, #f97316, #ea580c); }
+
+/* Scrollbar Clean */
+.notifications-dropdown::-webkit-scrollbar { width: 6px; }
+.notifications-dropdown::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
 
 /* --------------------------------------------------------------------------
   4. KPIs
@@ -569,7 +731,10 @@ body.modal-open{ overflow: hidden; }
 
   .sidebar-footer{ display: none; }
 
-  .top-bar{ margin-bottom: 20px; gap: 10px; }
+  .top-bar{
+    margin-bottom: 20px;
+    gap: 10px;
+  }
   .page-title{ font-size: 1.5rem; flex: 1; }
   .top-actions{ gap: 10px; }
 
@@ -657,7 +822,7 @@ body.modal-open{ overflow: hidden; }
     text-align: left;
     word-break: break-word;
     /* COR BASE PARA TEXTO COMUM (Nome, Unidade, etc) - PRETO SUAVE */
-    color: #1e293b !important; 
+    color: #1e293b !important;
     font-weight: 400 !important; /* Respeitando o pedido de peso 400 */
   }
 
@@ -681,7 +846,7 @@ body.modal-open{ overflow: hidden; }
     padding: 0 !important;
     z-index: 2;
   }
-  
+
   /* Garante que a primeira td sempre tenha a linha separadora, mesmo com td-acao */
   .tabela-ocorrencias tr td.td-destaque{
     border-bottom: 1px solid rgba(0,0,0,0.05) !important;
@@ -702,7 +867,7 @@ body.modal-open{ overflow: hidden; }
   .tabela-ocorrencias td:nth-child(3)::before{ content: "Morador : "; }
   .tabela-ocorrencias td:nth-child(4)::before{ content: "Contato : "; }
   .tabela-ocorrencias td:nth-child(5)::before{ content: "Status : "; }
-  
+
   /* --- OCORRÊNCIAS (Morador) - Ajusta labels quando é view de morador --- */
   .tabela-ocorrencias.morador-view td:nth-child(2)::before{ content: "Ocorrência : "; }
   .tabela-ocorrencias.morador-view td:nth-child(3)::before{ content: "Status : "; }
@@ -733,7 +898,7 @@ body.modal-open{ overflow: hidden; }
   .tabela-caixa-extrato td:nth-child(2)::before{ content: "Tipo : "; }
   .tabela-caixa-extrato td:nth-child(3)::before{ content: "Valor : "; }
   .tabela-caixa-extrato td:nth-child(4)::before{ content: "Descrição : "; }
-  
+
   /* Ajuste de alinhamento para Descrição no Extrato do Caixa */
   .tabela-caixa-extrato td:nth-child(4){
     display: flex !important;
@@ -741,14 +906,14 @@ body.modal-open{ overflow: hidden; }
     text-align: left !important;
     gap: 8px;
   }
-  
+
   .tabela-caixa-extrato td:nth-child(4)::before{
     flex-shrink: 0;
     margin-right: 0;
     margin-top: 0;
     display: inline-block;
   }
-  
+
   /* Garante que o conteúdo quebra corretamente */
   .tabela-caixa-extrato td:nth-child(4) > *{
     flex: 1;
@@ -857,7 +1022,7 @@ body.modal-open{ overflow: hidden; }
   .modal-glass{ padding: 20px; }
   .form-row{ flex-direction: column; gap: 0; }
   .modal-header h3{ font-size: 1.2rem; }
-  
+
   /* Padroniza botões dos modais de confirmação no mobile */
   /* Seletores específicos para os modais de confirmação */
   #modal-confirm-delete div[style*="display:flex"],
@@ -871,7 +1036,7 @@ body.modal-open{ overflow: hidden; }
     justify-content: stretch !important;
     align-items: stretch !important;
   }
-  
+
   /* Seletores muito específicos para sobrescrever estilos inline */
   /* Base comum para TODOS os botões */
   #modal-confirm-delete button.btn,
@@ -898,7 +1063,7 @@ body.modal-open{ overflow: hidden; }
     max-width: none !important;
     margin: 0 !important;
   }
-  
+
   /* Estilo específico para btn-outline (Cancelar) */
   #modal-confirm-delete button.btn-outline,
   #modal-confirm-delete-reserva button.btn-outline,
@@ -909,7 +1074,7 @@ body.modal-open{ overflow: hidden; }
     border-color: #cbd5e1 !important;
     color: #64748b !important;
   }
-  
+
   /* Estilo específico para btn-primary (botão de excluir) */
   #modal-confirm-delete button.btn-primary,
   #modal-confirm-delete-reserva button.btn-primary,
@@ -923,209 +1088,160 @@ body.modal-open{ overflow: hidden; }
 }
 
 /* --------------------------------------------------------------------------
-  10. TOAST
+  10. TOAST PREMIUM (Glassmorphism + Animations)
 -------------------------------------------------------------------------- */
-#toast-container{
+#toast-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 10000;
+  top: 24px;
+  right: 24px;
+  z-index: 11000;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  pointer-events: none; /* Deixa clicar através dos espaços vazios */
 }
 
-.toast{
-  min-width: 300px;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.5);
-  border-radius: 12px;
-  padding: 16px 20px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+@media (max-width: 768px) {
+  #toast-container {
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    align-items: stretch;
+  }
+}
+
+.toast {
+  pointer-events: auto;
+  min-width: 320px;
+  max-width: 400px;
+
+  /* Glass Effect Premium */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 1);
+  border-radius: 20px;
+
+  padding: 16px;
+  box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.05),
+      0 10px 15px -3px rgba(0, 0, 0, 0.05),
+      0 20px 25px -5px rgba(0, 0, 0, 0.05);
+
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  transform-origin: right center;
+  animation: toastEnter 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.toast:hover {
+  transform: scale(1.02);
+}
+
+.toast-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.toast-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.toast-msg {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* Icon Wrapper */
+.toast-icon-box {
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: #1e293b;
-  animation: slideInRight 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
-  transition: all 0.3s ease;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 1rem;
+  margin-top: 2px; /* Alinha com o título */
+}
+
+/* Variações de Cores e Ícones */
+.toast.success .toast-icon-box { background: #dcfce7; color: #16a34a; }
+.toast.error   .toast-icon-box { background: #fee2e2; color: #dc2626; }
+.toast.info    .toast-icon-box { background: #dbeafe; color: #2563eb; }
+
+/* Botão de Fechar discreto */
+.toast-close {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
   cursor: pointer;
+  padding: 4px;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+.toast-close:hover { color: #475569; }
+
+/* Animações */
+@keyframes toastEnter {
+  from { opacity: 0; transform: translateX(50px) scale(0.9); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
 }
 
-.toast:hover{ transform: translateY(-2px); background: rgba(255,255,255,0.95); }
-.toast.success{ border-left: 4px solid #3b82f6; }
-.toast.error{ border-left: 4px solid #ef4444; }
-.toast.info{ border-left: 4px solid #3b82f6; }
+@keyframes toastExit {
+  to { opacity: 0; transform: translateX(20px) scale(0.9); pointer-events: none; }
+}
 
-@keyframes slideInRight{
-  from{ transform: translateX(120%); opacity: 0; }
-  to{ transform: translateX(0); opacity: 1; }
+@media (max-width: 768px) {
+  @keyframes toastEnter {
+    from { opacity: 0; transform: translateY(-20px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
 }
-@keyframes fadeOut{
-  to{ opacity: 0; transform: translateY(-10px); }
-}
+
 
 /* --------------------------------------------------------------------------
   11. TABELA RESERVAS (ISOLADA)
 -------------------------------------------------------------------------- */
-.tabela-reservas-isolada{
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 600px;
-}
-
-.tabela-reservas-isolada th{
-  text-align: left;
-  padding: 16px 24px;
-  color: #64748b;
-  font-weight: 600;
-  font-size: 0.85rem;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-}
-
-.tabela-reservas-isolada td{
-  padding: 16px 24px;
-  color: #1e293b;
-  font-size: 0.95rem;
-  border-bottom: 1px solid rgba(0,0,0,0.03);
-  vertical-align: middle;
-  text-align: left;
-}
-
-.badge-area{
-  display: inline;
-  background: transparent;
-  color: #1e293b;
-  border-radius: 0;
-  font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0;
-}
-
-.tabela-reservas-isolada .reserva-pessoa{
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  line-height: 1.2;
-}
-
-.tabela-reservas-isolada .reserva-unidade{
-  color: #64748b;
-  font-size: 0.9em;
-  line-height: 1.2;
-}
-
+.tabela-reservas-isolada{ width: 100%; border-collapse: collapse; min-width: 600px; }
+.tabela-reservas-isolada th{ text-align: left; padding: 16px 24px; color: #64748b; font-weight: 600; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.05); }
+.tabela-reservas-isolada td{ padding: 16px 24px; color: #1e293b; font-size: 0.95rem; border-bottom: 1px solid rgba(0,0,0,0.03); vertical-align: middle; text-align: left; }
+.badge-area{ display: inline; background: transparent; color: #1e293b; border-radius: 0; font-weight: 600; font-size: 0.95rem; padding: 0; }
+.tabela-reservas-isolada .reserva-pessoa{ display: inline-flex; align-items: baseline; gap: 4px; line-height: 1.2; }
+.tabela-reservas-isolada .reserva-unidade{ color: #64748b; font-size: 0.9em; line-height: 1.2; }
 @media (max-width: 768px){
-  .tabela-reservas-isolada{
-    display: block;
-    min-width: 0;
-  }
-
+  .tabela-reservas-isolada{ display: block; min-width: 0; }
   .tabela-reservas-isolada thead{ display: none; }
-
-  .tabela-reservas-isolada tbody{
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  .tabela-reservas-isolada tr{
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    background: #ffffff;
-    border: 1px solid #f1f5f9;
-    border-radius: 24px;
-    padding: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    gap: 12px;
-  }
-
-  .tabela-reservas-isolada td{
-    display: flex;
-    align-items: baseline;
-    justify-content: flex-start;
-    width: 100%;
-    padding: 0;
-    border: none;
-    text-align: left;
-    line-height: 1.2;
-  }
-
-  .tabela-reservas-isolada td::before{
-    content: attr(data-label) ": ";
-    color: #64748b;
-    font-weight: 600;
-    font-size: 0.9rem;
-    margin-right: 8px;
-    line-height: 1.2;
-  }
-
+  .tabela-reservas-isolada tbody{ display: flex; flex-direction: column; gap: 16px; }
+  .tabela-reservas-isolada tr{ display: flex; flex-direction: column; position: relative; background: #ffffff; border: 1px solid #f1f5f9; border-radius: 24px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); gap: 12px; }
+  .tabela-reservas-isolada td{ display: flex; align-items: baseline; justify-content: flex-start; width: 100%; padding: 0; border: none; text-align: left; line-height: 1.2; }
+  .tabela-reservas-isolada td::before{ content: attr(data-label) ": "; color: #64748b; font-weight: 600; font-size: 0.9rem; margin-right: 8px; line-height: 1.2; }
   .tabela-reservas-isolada .td-destaque{ order: -1; margin-bottom: 5px; }
-  .tabela-reservas-isolada .td-destaque strong{
-    font-size: 1.1rem;
-    color: #0f172a;
-    font-weight: 800;
-  }
+  .tabela-reservas-isolada .td-destaque strong{ font-size: 1.1rem; color: #0f172a; font-weight: 800; }
   .tabela-reservas-isolada .td-destaque::before{ display: none; }
-
-  .tabela-reservas-isolada .td-acao{
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: auto;
-  }
+  .tabela-reservas-isolada .td-acao{ position: absolute; top: 20px; right: 20px; width: auto; }
   .tabela-reservas-isolada .td-acao::before{ display: none; }
-
-  .tabela-reservas-isolada tr.no-reservas{
-    align-items: center;
-    justify-content: center;
-    background: rgba(255,255,255,0.6);
-  }
-
-  /* Remove o ::before do estado vazio e centraliza o conteúdo */
-  .tabela-reservas-isolada tr.no-reservas td::before{
-    display: none !important;
-    content: none !important;
-  }
-
-  .tabela-reservas-isolada tr.no-reservas td{
-    text-align: center !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 20px !important;
-  }
+  .tabela-reservas-isolada tr.no-reservas{ align-items: center; justify-content: center; background: rgba(255,255,255,0.6); }
+  .tabela-reservas-isolada tr.no-reservas td::before{ display: none !important; content: none !important; }
+  .tabela-reservas-isolada tr.no-reservas td{ text-align: center !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; padding: 20px !important; }
 }
 
 /* =========================================================
    ESTILOS DE CÉLULAS (PADRONIZAÇÃO GLOBAL - PESO 400)
    ========================================================= */
-
-/* Títulos (Ocorrência, Área, etc) - Escuro, mas Leve */
-.td-titulo {
-  color: #0f172a !important;
-  font-weight: 400 !important; /* Peso 400 (Regular) conforme sua preferência */
-}
-
-/* Texto Secundário (Nome, Unidade) */
-.td-texto {
-  color: #1e293b !important; /* Mantendo o tom "quase preto" que você pediu */
-  font-weight: 400 !important;
-}
-
-/* Datas */
-.td-destaque {
-  color: #334155 !important;
-  font-weight: 400 !important;
-}
-
-/* Garante que nenhum strong ou b perdido estrague o visual */
-.glass-table strong, 
-.glass-table b {
-  font-weight: 400 !important;
-}
+.td-titulo { color: #0f172a !important; font-weight: 400 !important; }
+.td-texto { color: #1e293b !important; font-weight: 400 !important; }
+.td-destaque { color: #334155 !important; font-weight: 400 !important; }
+.glass-table strong, .glass-table b { font-weight: 400 !important; }
