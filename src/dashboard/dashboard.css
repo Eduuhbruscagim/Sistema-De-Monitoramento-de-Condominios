@@ -530,7 +530,8 @@ body.modal-open {
   color: #1e293b;
   font-size: 0.95rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.03);
-  vertical-align: middle;
+  /* MUDANÇA AQUI: Alterado de middle para top para textos longos não quebrarem o layout */
+  vertical-align: top;
 }
 
 .glass-table tr:last-child td {
@@ -543,7 +544,18 @@ body.modal-open {
 .glass-table th:last-child,
 .glass-table td:last-child {
   text-align: center;
-  vertical-align: middle;
+  vertical-align: middle; /* Mantém botões de ação centralizados */
+}
+
+/* CORREÇÃO DESKTOP: Descrição do Caixa (que é o último item) deve ficar no topo */
+.tabela-caixa-extrato td:last-child {
+  text-align: left;
+  vertical-align: top !important; /* !important para vencer o style inline do JS */
+}
+
+/* CORREÇÃO CABEÇALHO: O título "Descrição" também vai para a esquerda */
+.tabela-caixa-extrato th:last-child {
+  text-align: left !important;
 }
 
 .user-cell {
@@ -928,7 +940,7 @@ body.modal-open {
   /* Ajuste de alinhamento para Descrição no Extrato do Caixa */
   .tabela-caixa-extrato td:nth-child(4) {
     display: flex !important;
-    align-items: center !important;
+    align-items: baseline !important; /* CORREÇÃO FINAL: Baseline alinha pela 'linha do caderno' */
     text-align: left !important;
     gap: 8px;
   }
