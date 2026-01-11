@@ -67,6 +67,7 @@ const State = {
   reservasCache: null,
   ocorrenciasCache: null,
   caixaCache: null,
+  notificacoesCache: null, // NOVO: Cache para notificações
 
   // IDs temporários para modais de exclusão
   emailParaDeletar: null,
@@ -76,6 +77,8 @@ const State = {
   // Flags de Loading para evitar spam de cliques
   carregandoReservas: false,
   carregandoOcorrencias: false,
+  carregandoCaixa: false,
+  carregandoNotificacoes: false,
 };
 
 // Helpers de Acesso Rápido
@@ -140,6 +143,7 @@ const MoradorService = {
         State.reservasCache = null;
         State.ocorrenciasCache = null;
         State.caixaCache = null;
+        State.notificacoesCache = null;
         State.moradoresCache = [];
 
         // Redireciona imediatamente
@@ -611,6 +615,8 @@ const UINotifications = {
     this.panel.classList.add("active");
     if (this.overlay) this.overlay.classList.add("active");
     if (this.wrapper) this.wrapper.classList.add("highlight-wrapper");
+
+    // CACHE LOGIC: Só renderiza do servidor se o cache estiver vazio
     this.render();
   },
 
@@ -622,6 +628,16 @@ const UINotifications = {
   },
 
   async render() {
+    // 1. Se tem cache, usa ele instantaneamente
+    if (State.notificacoesCache) {
+      this.renderizarHTML(State.notificacoesCache);
+      return;
+    }
+
+    // 2. Se não tem, mostra Skeleton e busca
+    if (State.carregandoNotificacoes) return;
+    State.carregandoNotificacoes = true;
+
     // SKELETON: Notificações (Minimalista: 1 item)
     this.list.innerHTML = Array(1)
       .fill(0)
@@ -640,7 +656,17 @@ const UINotifications = {
 
     try {
       const itens = await NotificationService.buscarTudo();
-      if (itens.length === 0) {
+      State.notificacoesCache = itens || []; // Salva no cache
+      this.renderizarHTML(State.notificacoesCache);
+    } catch (err) {
+      this.list.innerHTML = `<div style="padding:20px;text-align:center;color:#ef4444">Erro ao carregar notificações.</div>`;
+    } finally {
+        State.carregandoNotificacoes = false;
+    }
+  },
+
+  renderizarHTML(itens) {
+    if (itens.length === 0) {
         this.list.innerHTML = `<div style="padding:30px;text-align:center;color:#94a3b8">Nenhuma notificação recente.</div>`;
         return;
       }
@@ -663,10 +689,7 @@ const UINotifications = {
       `
         )
         .join("");
-    } catch (err) {
-      this.list.innerHTML = `<div style="padding:20px;text-align:center;color:#ef4444">Erro ao carregar notificações.</div>`;
-    }
-  },
+  }
 };
 
 // Controlador de Reservas
@@ -1191,7 +1214,12 @@ const UICaixa = {
 
     if (this.btnVer) {
       this.btnVer.addEventListener("click", () => {
-        this.carregarExtrato();
+        // CACHE LOGIC PARA CAIXA: Verifica se tem dados antes de buscar
+        if (State.caixaCache && State.caixaCache.length > 0) {
+            this.renderizarLista(State.caixaCache);
+        } else {
+            this.carregarExtrato();
+        }
         ModalUX.open(this.modalHistorico);
       });
     }
@@ -1215,6 +1243,7 @@ const UICaixa = {
         else {
           UI.showToast("Caixa atualizado", "success");
           this.form.reset();
+          State.caixaCache = null; // Invalida cache para forçar recarga
           ModalUX.close(this.modal);
         }
         btn.innerText = original;
@@ -1224,47 +1253,63 @@ const UICaixa = {
   },
 
   async carregarExtrato() {
-    if (!this.listaHistorico) return;
+    if (!this.listaHistorico || State.carregandoCaixa) return;
+    State.carregandoCaixa = true;
 
     // SKELETON: Tabela Caixa (Minimalista: 1 linha)
-    this.listaHistorico.innerHTML = Array(1)
-      .fill(0)
-      .map(
-        () => `
-      <tr>
-        <td><div class="skeleton skeleton-text" style="width:80px"></div></td>
-        <td><div class="skeleton skeleton-text" style="width:60px"></div></td>
-        <td><div class="skeleton skeleton-text" style="width:100px"></div></td>
-        <td><div class="skeleton skeleton-text" style="width:150px"></div></td>
-      </tr>
-    `
-      )
-      .join("");
-
-    const { data, error } = await CaixaService.listarPublico();
-    if (error || !data?.length) {
-      this.listaHistorico.innerHTML = `<tr><td colspan="4" style="text-align:center">Sem movimentações.</td></tr>`;
-      return;
+    if (!this.listaHistorico.children.length) {
+        this.listaHistorico.innerHTML = Array(1)
+        .fill(0)
+        .map(
+            () => `
+        <tr>
+            <td><div class="skeleton skeleton-text" style="width:80px"></div></td>
+            <td><div class="skeleton skeleton-text" style="width:60px"></div></td>
+            <td><div class="skeleton skeleton-text" style="width:100px"></div></td>
+            <td><div class="skeleton skeleton-text" style="width:150px"></div></td>
+        </tr>
+        `
+        )
+        .join("");
     }
 
-    this.listaHistorico.innerHTML = data
-      .map((m) => {
-        const d = new Date(m.created_at).toLocaleDateString("pt-BR");
-        const tipo = m.tipo === "entrada" ? "Entrada" : "Saída";
+    try {
+        const { data, error } = await CaixaService.listarPublico();
+        if (error) throw error;
 
-        return `<tr>
-        <td data-label="Data" class="td-destaque"><strong>${d}</strong></td>
-        <td data-label="Tipo" class="td-texto">${tipo}</td>
-        <td data-label="Valor" class="td-titulo"><strong>${Utils.formatBRL(
-          m.valor
-        )}</strong></td>
-        <td data-label="Descrição" class="td-texto" style="vertical-align: middle;">${Utils.safe(
-          m.descricao
-        )}</td>
-      </tr>`;
-      })
-      .join("");
+        State.caixaCache = data || []; // Salva no cache
+        this.renderizarLista(State.caixaCache);
+    } catch(err) {
+        this.listaHistorico.innerHTML = `<tr><td colspan="4" style="text-align:center">Erro ao carregar.</td></tr>`;
+    } finally {
+        State.carregandoCaixa = false;
+    }
   },
+
+  renderizarLista(data) {
+    if (!data?.length) {
+        this.listaHistorico.innerHTML = `<tr><td colspan="4" style="text-align:center">Sem movimentações.</td></tr>`;
+        return;
+      }
+
+      this.listaHistorico.innerHTML = data
+        .map((m) => {
+          const d = new Date(m.created_at).toLocaleDateString("pt-BR");
+          const tipo = m.tipo === "entrada" ? "Entrada" : "Saída";
+
+          return `<tr>
+          <td data-label="Data" class="td-destaque"><strong>${d}</strong></td>
+          <td data-label="Tipo" class="td-texto">${tipo}</td>
+          <td data-label="Valor" class="td-titulo"><strong>${Utils.formatBRL(
+            m.valor
+          )}</strong></td>
+          <td data-label="Descrição" class="td-texto" style="vertical-align: middle;">${Utils.safe(
+            m.descricao
+          )}</td>
+        </tr>`;
+        })
+        .join("");
+  }
 };
 
 // Controlador de Moradores
@@ -1476,6 +1521,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         { event: "*", schema: "public", table: "ocorrencias" },
         () => {
           UI.renderizarKPIs();
+          State.notificacoesCache = null; // Invalida cache de notificações
           if (
             document
               .getElementById("view-ocorrencias")
@@ -1489,6 +1535,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         { event: "*", schema: "public", table: "reservas" },
         () => {
           UI.renderizarAtividadesRecentes();
+          State.notificacoesCache = null; // Invalida cache de notificações
           if (
             document
               .getElementById("view-reservas")
@@ -1502,6 +1549,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         { event: "*", schema: "public", table: "caixa_movimentos" },
         () => {
           UI.renderizarKPIs();
+          State.notificacoesCache = null; // Invalida cache de notificações
+          State.caixaCache = null; // Invalida cache do extrato
           if (UICaixa.modalHistorico.classList.contains("active"))
             UICaixa.carregarExtrato();
         }
