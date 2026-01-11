@@ -928,7 +928,7 @@ body.modal-open {
   /* Ajuste de alinhamento para Descrição no Extrato do Caixa */
   .tabela-caixa-extrato td:nth-child(4) {
     display: flex !important;
-    align-items: flex-start !important;
+    align-items: center !important;
     text-align: left !important;
     gap: 8px;
   }

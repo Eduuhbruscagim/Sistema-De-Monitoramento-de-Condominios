@@ -596,7 +596,6 @@ const UINotifications = {
         this.close();
       }
     });
-
   },
 
   async toggle() {
@@ -1252,15 +1251,14 @@ const UICaixa = {
       .map((m) => {
         const d = new Date(m.created_at).toLocaleDateString("pt-BR");
         const tipo = m.tipo === "entrada" ? "Entrada" : "Saída";
-        const sinal = tipo === "Entrada" ? "+" : "-";
 
         return `<tr>
         <td data-label="Data" class="td-destaque"><strong>${d}</strong></td>
         <td data-label="Tipo" class="td-texto">${tipo}</td>
-        <td data-label="Valor" class="td-titulo"><strong>${sinal} ${Utils.formatBRL(
+        <td data-label="Valor" class="td-titulo"><strong>${Utils.formatBRL(
           m.valor
         )}</strong></td>
-        <td data-label="Descrição" class="td-texto">${Utils.safe(
+        <td data-label="Descrição" class="td-texto" style="vertical-align: middle;">${Utils.safe(
           m.descricao
         )}</td>
       </tr>`;
