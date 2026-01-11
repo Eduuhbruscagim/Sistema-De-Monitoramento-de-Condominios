@@ -14,6 +14,13 @@
   --primary-gradient: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
 
+/* UTILITÁRIO DE PERFORMANCE (NOVO) */
+.gpu-accelerated {
+  transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
 body {
   background: radial-gradient(
     circle at 0% 0%,
@@ -629,6 +636,20 @@ body.modal-open {
   .sidebar::-webkit-scrollbar {
     display: none;
   }
+
+  /* --- OTIMIZAÇÃO GPU MOBILE (NOVO) --- */
+  .sidebar,
+  .stat-card,
+  .glass-table tr,
+  .notifications-dropdown {
+    /* Blur reduzido para não travar o scroll (24px -> 12px) */
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    /* Fundo mais opaco para compensar */
+    background: rgba(255, 255, 255, 0.85);
+  }
+  /* ------------------------------------ */
+
   .sidebar-header {
     display: none;
   }
@@ -768,8 +789,8 @@ body.modal-open {
     display: flex;
     flex-direction: column;
     position: relative;
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(20px);
+
+    /* Nota: Blur já ajustado na media query de 1024px acima */
     border: 1px solid rgba(255, 255, 255, 0.9);
     border-radius: 24px;
     padding: 24px;
@@ -786,29 +807,30 @@ body.modal-open {
     transform: scale(0.98);
   }
 
-  .tabela-moradores td,
-  .tabela-ocorrencias td,
+  /* --- REFATORADO: CÉLULAS GENÉRICAS (SEM !important) --- */
+  .glass-table td,
   .tabela-reservas-isolada td,
   .tabela-caixa-extrato td {
     display: block;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
     padding: 8px 0;
     border: none;
-    width: 100%;
-    text-align: left;
     word-break: break-word;
-    color: #1e293b !important;
-    font-weight: 400 !important;
+    color: #1e293b;
+    font-weight: 400;
   }
 
-  /* Destaque Data (Primeira linha) */
-  .tabela-moradores td:nth-child(1),
-  .tabela-ocorrencias td:nth-child(1),
-  .tabela-reservas-isolada td:nth-child(1),
-  .tabela-caixa-extrato td:nth-child(1) {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
-    padding-bottom: 16px !important;
-    margin-bottom: 8px !important;
-    display: block !important;
+  /* Destaque Data (Primeira linha de cada card) */
+  .tabela-moradores td:first-child,
+  .tabela-ocorrencias td:first-child,
+  .tabela-reservas-isolada td:first-child,
+  .tabela-caixa-extrato td:first-child {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 16px;
+    margin-bottom: 8px;
+    display: block;
   }
 
   /* Botão de Ação (Flutuante) */
@@ -816,16 +838,16 @@ body.modal-open {
     position: absolute;
     top: 20px;
     right: 16px;
-    width: auto !important;
+    width: auto !important; /* Aqui mantemos se precisar sobrescrever o width 100% acima */
     padding: 0 !important;
     z-index: 2;
   }
 
   /* Garante que a primeira td sempre tenha a linha separadora */
   .tabela-ocorrencias tr td.td-destaque {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
-    padding-bottom: 16px !important;
-    margin-bottom: 8px !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 16px;
+    margin-bottom: 8px;
   }
 
   /* === LABELS (Cinza claro e negrito) === */
@@ -863,8 +885,8 @@ body.modal-open {
 
   /* TÍTULO DA OCORRÊNCIA */
   .tabela-ocorrencias td:nth-child(2) {
-    color: #0f172a !important;
-    font-weight: 400 !important;
+    color: #0f172a;
+    font-weight: 400;
   }
 
   /* --- RESERVAS --- */
@@ -877,8 +899,8 @@ body.modal-open {
 
   /* ÁREA DA RESERVA */
   .tabela-reservas-isolada td:nth-child(2) {
-    color: #0f172a !important;
-    font-weight: 400 !important;
+    color: #0f172a;
+    font-weight: 400;
   }
 
   /* --- MORADORES --- */
@@ -1475,7 +1497,6 @@ body.modal-open {
   /* --------------------------------------------------------------------------
    AJUSTE MOBILE (CENTRALIZADO - ZERO LAG VERSION)
 -------------------------------------------------------------------------- */
-@media (max-width: 768px) {
   .notifications-dropdown {
     position: fixed;
     top: 50%;
@@ -1520,7 +1541,6 @@ body.modal-open {
       transform 0.5s cubic-bezier(0.19, 1, 0.22, 1),
       visibility 0s linear 0s;
   }
-}
 }
 
 /* --------------------------------------------------------------------------

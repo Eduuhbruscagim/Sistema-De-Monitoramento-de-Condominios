@@ -63,6 +63,11 @@ const State = {
   moradoresCache: [],
   idEditando: null,
 
+  // Cache de dados para evitar refetching desnecessário
+  reservasCache: null,
+  ocorrenciasCache: null,
+  caixaCache: null,
+
   // IDs temporários para modais de exclusão
   emailParaDeletar: null,
   reservaParaDeletar: null,
@@ -77,7 +82,13 @@ const State = {
 const isAdmin = () =>
   State.usuarioLogado?.cargo === "Dono" ||
   State.usuarioLogado?.cargo === "admin";
-const getMeuUserId = async () => (await supabase.auth.getUser()).data?.user?.id;
+const getMeuUserId = async () => {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data?.user?.id) {
+    throw new Error("Usuário não autenticado");
+  }
+  return data.user.id;
+};
 
 /**
  * ============================================================================
@@ -93,7 +104,9 @@ const MoradorService = {
     if (!session) return null;
     const { data, error } = await supabase
       .from("moradores")
-      .select("*")
+      .select(
+        "id, nome, email, cargo, user_id, celular, tipo, status, unidade, img"
+      )
       .eq("user_id", session.user.id)
       .maybeSingle();
     if (error) throw new Error(error.message);
@@ -102,7 +115,7 @@ const MoradorService = {
   async listarTodos() {
     return await supabase
       .from("moradores")
-      .select("*")
+      .select("id, nome, email, cargo, celular, tipo, status, unidade, img")
       .order("id", { ascending: false });
   },
   async salvar(dados, id) {
@@ -112,8 +125,31 @@ const MoradorService = {
     return await supabase.from("moradores").delete().eq("email", email);
   },
   async logout() {
-    await supabase.auth.signOut();
-    window.location.href = "../auth/login.html";
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error("Erro ao fazer logout:", error);
+        UI.showToast("Erro ao desconectar. Redirecionando...", "error");
+        // Mesmo com erro, redireciona para garantir
+        setTimeout(() => {
+          window.location.href = "../auth/login.html";
+        }, 1000);
+      } else {
+        // Limpa o state antes de redirecionar
+        State.usuarioLogado = null;
+        State.reservasCache = null;
+        State.ocorrenciasCache = null;
+        State.caixaCache = null;
+        State.moradoresCache = [];
+
+        // Redireciona imediatamente
+        window.location.href = "../auth/login.html";
+      }
+    } catch (err) {
+      console.error("Erro fatal no logout:", err);
+      // Em caso de erro, força redirecionamento
+      window.location.href = "../auth/login.html";
+    }
   },
 };
 
@@ -121,11 +157,14 @@ const ReservaService = {
   async listar() {
     return await supabase
       .from("vw_reservas_detalhes")
-      .select("*")
+      .select("id, area, data, user_id, nome_morador, created_at")
       .order("data", { ascending: true });
   },
   async criar(area, data) {
     const userId = await getMeuUserId();
+    if (!userId) {
+      throw new Error("Usuário não autenticado");
+    }
     return await supabase
       .from("reservas")
       .insert([{ user_id: userId, area, data }]);
@@ -139,11 +178,17 @@ const OcorrenciaService = {
   async listar() {
     return await supabase
       .from("vw_ocorrencias_detalhes")
-      .select("*")
-      .order("created_at", { ascending: false });
+      .select(
+        "id, titulo, descricao, status, created_at, minha, registrador_nome, registrador_unidade, registrador_celular"
+      )
+      .order("created_at", { ascending: false })
+      .limit(50);
   },
   async criar(titulo, descricao) {
     const userId = await getMeuUserId();
+    if (!userId) {
+      throw new Error("Usuário não autenticado");
+    }
     return await supabase
       .from("ocorrencias")
       .insert([{ user_id: userId, titulo, descricao }]);
@@ -160,9 +205,9 @@ const CaixaService = {
   async listarPublico() {
     return await supabase
       .from("vw_caixa_movimentos_publico")
-      .select("*")
+      .select("id, tipo, valor, descricao, created_at")
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(50);
   },
   async movimentar(tipo, valor, descricao) {
     const userId = await getMeuUserId();
@@ -181,11 +226,23 @@ const KpiService = {
 // Serviço agregador para o Notification Center
 const NotificationService = {
   async buscarTudo() {
-    // Busca paralela para performance máxima
+    // Busca paralela para performance máxima (com limites otimizados)
     const [ocorrencias, reservas, caixa] = await Promise.all([
-      OcorrenciaService.listar(),
-      ReservaService.listar(),
-      CaixaService.listarPublico(),
+      supabase
+        .from("vw_ocorrencias_detalhes")
+        .select("titulo, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20),
+      supabase
+        .from("vw_reservas_detalhes")
+        .select("area, data, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20),
+      supabase
+        .from("vw_caixa_movimentos_publico")
+        .select("tipo, valor, descricao, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20),
     ]);
 
     const lista = [];
@@ -510,7 +567,6 @@ const UINotifications = {
   btn: document.getElementById("btn-notifications"),
   panel: document.getElementById("notifications-panel"),
   list: document.getElementById("notifications-list"),
-  badge: document.getElementById("notif-badge"),
   wrapper: document.querySelector(".notifications-wrapper"),
   overlay: null,
   isOpen: false,
@@ -540,6 +596,7 @@ const UINotifications = {
         this.close();
       }
     });
+
   },
 
   async toggle() {
@@ -555,7 +612,6 @@ const UINotifications = {
     this.panel.classList.add("active");
     if (this.overlay) this.overlay.classList.add("active");
     if (this.wrapper) this.wrapper.classList.add("highlight-wrapper");
-    if (this.badge) this.badge.style.display = "none";
     this.render();
   },
 
@@ -632,49 +688,193 @@ const UIReserva = {
         const area = document.getElementById("reserva-area")?.value;
         const data = document.getElementById("reserva-data")?.value;
 
-        const btn = this.form.querySelector("button");
-        const original = btn.innerText;
-        btn.innerText = "Agendando...";
-        btn.disabled = true;
-
-        const { error } = await ReservaService.criar(area, data);
-        if (error) {
-          UI.showToast(
-            error.code === "23505" ? "Data indisponível!" : error.message,
-            "error"
-          );
-        } else {
-          UI.showToast("Reserva confirmada!", "success");
-          ModalUX.close(this.modal);
+        // Optimistic UI: Criar reserva temporária no cache
+        const tempId = `temp-${Date.now()}`;
+        // Obtém user_id da sessão se não estiver no State
+        let meuId = State.usuarioLogado?.user_id;
+        if (!meuId) {
+          try {
+            meuId = await getMeuUserId();
+          } catch (err) {
+            UI.showToast("Erro ao obter dados do usuário", "error");
+            return;
+          }
         }
-        btn.innerText = original;
-        btn.disabled = false;
+        const nomeMorador = State.usuarioLogado?.nome || "Você";
+        const reservaTemp = {
+          id: tempId,
+          area,
+          data,
+          user_id: meuId,
+          nome_morador: nomeMorador,
+          created_at: new Date().toISOString(),
+        };
+
+        // Atualizar cache e DOM imediatamente
+        if (State.reservasCache) {
+          State.reservasCache = [...State.reservasCache, reservaTemp];
+        } else {
+          State.reservasCache = [reservaTemp];
+        }
+        this.renderizarLista(State.reservasCache);
+
+        // Fechar modal imediatamente
+        ModalUX.close(this.modal);
+        this.form.reset();
+
+        // Chamada ao servidor em background
+        try {
+          // Validação antes de enviar
+          if (!area || !data) {
+            throw new Error("Preencha todos os campos");
+          }
+
+          const { data: resultData, error } = await ReservaService.criar(
+            area,
+            data
+          );
+          if (error) {
+            // Reverter: remover do cache e recarregar
+            if (State.reservasCache) {
+              State.reservasCache = State.reservasCache.filter(
+                (r) => r.id !== tempId
+              );
+            }
+            await this.carregar();
+            UI.showToast(
+              error.code === "23505" ? "Data indisponível!" : error.message,
+              "error"
+            );
+          } else {
+            // Sucesso: o Realtime vai atualizar automaticamente, mas podemos atualizar o cache
+            UI.showToast("Reserva confirmada!", "success");
+            // O Realtime vai atualizar a lista automaticamente
+          }
+        } catch (err) {
+          // Reverter em caso de erro
+          if (State.reservasCache) {
+            State.reservasCache = State.reservasCache.filter(
+              (r) => r.id !== tempId
+            );
+          }
+          await this.carregar();
+          UI.showToast("Erro ao criar reserva", "error");
+        }
       });
     }
 
     if (this.btnConfirmDelete) {
       this.btnConfirmDelete.addEventListener("click", async () => {
         if (!State.reservaParaDeletar) return;
-        const { error } = await ReservaService.deletar(
-          State.reservaParaDeletar
-        );
-        if (error) UI.showToast(error.message, "error");
-        else UI.showToast("Reserva cancelada.", "info");
 
+        const idParaDeletar = State.reservaParaDeletar;
+        const reservaOriginal = State.reservasCache?.find(
+          (r) => r.id === idParaDeletar
+        );
+
+        // Optimistic UI: Remover do cache e DOM imediatamente
+        if (State.reservasCache) {
+          State.reservasCache = State.reservasCache.filter(
+            (r) => r.id !== idParaDeletar
+          );
+        } else {
+          State.reservasCache = [];
+        }
+        this.renderizarLista(State.reservasCache);
+
+        // Fechar modal imediatamente
         ModalUX.close(this.modalDelete);
         State.reservaParaDeletar = null;
+        UI.showToast("Reserva cancelada.", "info");
+
+        // Chamada ao servidor em background
+        try {
+          const { error } = await ReservaService.deletar(idParaDeletar);
+          if (error) {
+            // Reverter: restaurar no cache e recarregar
+            if (reservaOriginal && State.reservasCache) {
+              State.reservasCache = [...State.reservasCache, reservaOriginal];
+            }
+            await this.carregar();
+            UI.showToast(error.message, "error");
+          }
+          // Se sucesso, o Realtime vai manter a lista atualizada
+        } catch (err) {
+          // Reverter em caso de erro
+          if (reservaOriginal && State.reservasCache) {
+            State.reservasCache = [...State.reservasCache, reservaOriginal];
+          }
+          await this.carregar();
+          UI.showToast("Erro ao cancelar reserva", "error");
+        }
       });
     }
+  },
+
+  renderizarLista(data) {
+    if (!this.lista || !data) return;
+
+    const souDono = isAdmin();
+    const colCount = souDono ? 4 : 3;
+    const meuId = State.usuarioLogado?.user_id;
+
+    const thead = document.getElementById("thead-reservas");
+    if (thead) {
+      thead.innerHTML = souDono
+        ? `<th>Data</th><th>Área</th><th>Reservado Por</th><th>Ações</th>`
+        : `<th>Data</th><th>Área</th><th>Ações</th>`;
+    }
+
+    if (!data.length) {
+      this.lista.innerHTML = `
+        <tr class="no-reservas"><td colspan="${colCount}">
+          <div style="display:flex;flex-direction:column;align-items:center;padding:20px;gap:10px">
+            <i class="fa-regular fa-face-smile-beam" style="font-size:1.5rem;color:#2563eb"></i>
+            <span>Nenhuma reserva futura.</span>
+          </div>
+        </td></tr>`;
+      return;
+    }
+
+    this.lista.innerHTML = data
+      .map((r) => {
+        const dataObj = Utils.ajustarDataBR(r.data);
+        // Verifica se pode cancelar: admin ou se é a própria reserva
+        const podeCancelar =
+          souDono || (meuId && r.user_id && r.user_id === meuId);
+
+        const btn = podeCancelar
+          ? `<button class="action-btn" onclick="deletarReserva(${r.id})" style="color:#ef4444"><i class="fa-regular fa-trash-can"></i></button>`
+          : `<button class="action-btn action-btn-locked"><i class="fa-solid fa-lock"></i></button>`;
+
+        const cols = souDono
+          ? `<td data-label="Data" class="td-destaque">${dataObj.toLocaleDateString(
+              "pt-BR"
+            )}</td>
+           <td data-label="Área" class="td-titulo">${Utils.safe(r.area)}</td>
+           <td data-label="Reservado Por" class="td-texto">${Utils.safe(
+             r.nome_morador
+           )}</td>
+           <td class="td-acao">${btn}</td>`
+          : `<td data-label="Data" class="td-destaque">${dataObj.toLocaleDateString(
+              "pt-BR"
+            )}</td>
+           <td data-label="Área" class="td-titulo">${Utils.safe(r.area)}</td>
+           <td class="td-acao">${btn}</td>`;
+
+        return `<tr>${cols}</tr>`;
+      })
+      .join("");
   },
 
   async carregar() {
     if (!this.lista || State.carregandoReservas) return;
     State.carregandoReservas = true;
 
-    // SKELETON: Tabela Reservas (Minimalista: 1 linha)
     const souDono = isAdmin();
     const colCount = souDono ? 4 : 3;
 
+    // SKELETON: Tabela Reservas (Minimalista: 1 linha)
     // Verifica se a tabela está vazia antes de inserir Skeleton para evitar piscar em reloads rápidos
     if (!this.lista.children.length) {
       this.lista.innerHTML = Array(1)
@@ -700,53 +900,11 @@ const UIReserva = {
       const { data, error } = await ReservaService.listar();
       if (error) throw error;
 
-      const meuId = State.usuarioLogado?.user_id;
+      // Atualizar cache
+      State.reservasCache = data || [];
 
-      const thead = document.getElementById("thead-reservas");
-      if (thead) {
-        thead.innerHTML = souDono
-          ? `<th>Data</th><th>Área</th><th>Reservado Por</th><th>Ações</th>`
-          : `<th>Data</th><th>Área</th><th>Ações</th>`;
-      }
-
-      if (!data?.length) {
-        this.lista.innerHTML = `
-          <tr class="no-reservas"><td colspan="${colCount}">
-            <div style="display:flex;flex-direction:column;align-items:center;padding:20px;gap:10px">
-              <i class="fa-regular fa-face-smile-beam" style="font-size:1.5rem;color:#2563eb"></i>
-              <span>Nenhuma reserva futura.</span>
-            </div>
-          </td></tr>`;
-        return;
-      }
-
-      this.lista.innerHTML = data
-        .map((r) => {
-          const dataObj = Utils.ajustarDataBR(r.data);
-          const podeCancelar = souDono || r.user_id === meuId;
-
-          const btn = podeCancelar
-            ? `<button class="action-btn" onclick="deletarReserva(${r.id})" style="color:#ef4444"><i class="fa-regular fa-trash-can"></i></button>`
-            : `<button class="action-btn action-btn-locked"><i class="fa-solid fa-lock"></i></button>`;
-
-          const cols = souDono
-            ? `<td data-label="Data" class="td-destaque">${dataObj.toLocaleDateString(
-                "pt-BR"
-              )}</td>
-             <td data-label="Área" class="td-titulo">${Utils.safe(r.area)}</td>
-             <td data-label="Reservado Por" class="td-texto">${Utils.safe(
-               r.nome_morador
-             )}</td>
-             <td class="td-acao">${btn}</td>`
-            : `<td data-label="Data" class="td-destaque">${dataObj.toLocaleDateString(
-                "pt-BR"
-              )}</td>
-             <td data-label="Área" class="td-titulo">${Utils.safe(r.area)}</td>
-             <td class="td-acao">${btn}</td>`;
-
-          return `<tr>${cols}</tr>`;
-        })
-        .join("");
+      // Renderizar usando a função helper
+      this.renderizarLista(State.reservasCache);
     } catch (e) {
       this.lista.innerHTML = `<tr><td colspan="${colCount}" style="text-align:center">Erro ao carregar.</td></tr>`;
     } finally {
@@ -778,130 +936,236 @@ const UIOcorrencias = {
         const t = document.getElementById("oc-titulo")?.value;
         const d = document.getElementById("oc-descricao")?.value;
 
-        const btn = this.form.querySelector("button");
-        const original = btn.innerText;
-        btn.innerText = "Enviando...";
-        btn.disabled = true;
-
-        const { error } = await OcorrenciaService.criar(t, d);
-        if (error) UI.showToast(error.message, "error");
-        else {
-          UI.showToast("Ocorrência Registrada!", "success");
-          this.form.reset();
-          ModalUX.close(this.modal);
+        // Optimistic UI: Criar ocorrência temporária no cache
+        const tempId = `temp-${Date.now()}`;
+        // Obtém user_id da sessão se não estiver no State
+        let meuId = State.usuarioLogado?.user_id;
+        if (!meuId) {
+          try {
+            meuId = await getMeuUserId();
+          } catch (err) {
+            UI.showToast("Erro ao obter dados do usuário", "error");
+            return;
+          }
         }
-        btn.innerText = original;
-        btn.disabled = false;
+        const nomeMorador = State.usuarioLogado?.nome || "Você";
+        const celularMorador = State.usuarioLogado?.celular || "";
+        const ocorrenciaTemp = {
+          id: tempId,
+          titulo: t,
+          descricao: d,
+          status: "aberta",
+          created_at: new Date().toISOString(),
+          user_id: meuId,
+          minha: true,
+          registrador_nome: nomeMorador,
+          registrador_celular: celularMorador,
+        };
+
+        // Atualizar cache e DOM imediatamente
+        if (State.ocorrenciasCache) {
+          State.ocorrenciasCache = [ocorrenciaTemp, ...State.ocorrenciasCache];
+        } else {
+          State.ocorrenciasCache = [ocorrenciaTemp];
+        }
+        this.renderizarLista(State.ocorrenciasCache);
+
+        // Fechar modal imediatamente
+        ModalUX.close(this.modal);
+        this.form.reset();
+        UI.showToast("Ocorrência Registrada!", "success");
+
+        // Chamada ao servidor em background
+        try {
+          // Validação antes de enviar
+          if (!t || !d) {
+            throw new Error("Preencha todos os campos");
+          }
+
+          const { error } = await OcorrenciaService.criar(t, d);
+          if (error) {
+            // Reverter: remover do cache e recarregar
+            if (State.ocorrenciasCache) {
+              State.ocorrenciasCache = State.ocorrenciasCache.filter(
+                (o) => o.id !== tempId
+              );
+            }
+            await this.carregar();
+            UI.showToast(error.message, "error");
+          }
+          // Se sucesso, o Realtime vai atualizar automaticamente
+        } catch (err) {
+          // Reverter em caso de erro
+          if (State.ocorrenciasCache) {
+            State.ocorrenciasCache = State.ocorrenciasCache.filter(
+              (o) => o.id !== tempId
+            );
+          }
+          await this.carregar();
+          UI.showToast("Erro ao criar ocorrência", "error");
+        }
       });
     }
 
     if (this.btnConfirmDelete) {
       this.btnConfirmDelete.addEventListener("click", async () => {
         if (!State.ocorrenciaParaDeletar) return;
-        const { error } = await OcorrenciaService.deletar(
-          State.ocorrenciaParaDeletar
+
+        const idParaDeletar = State.ocorrenciaParaDeletar;
+        const ocorrenciaOriginal = State.ocorrenciasCache?.find(
+          (o) => o.id === idParaDeletar
         );
-        if (error) UI.showToast(error.message, "error");
-        else UI.showToast("Excluída.", "info");
+
+        // Optimistic UI: Remover do cache e DOM imediatamente
+        if (State.ocorrenciasCache) {
+          State.ocorrenciasCache = State.ocorrenciasCache.filter(
+            (o) => o.id !== idParaDeletar
+          );
+        } else {
+          State.ocorrenciasCache = [];
+        }
+        this.renderizarLista(State.ocorrenciasCache);
+
+        // Fechar modal imediatamente
         ModalUX.close(this.modalDelete);
         State.ocorrenciaParaDeletar = null;
+        UI.showToast("Excluída.", "info");
+
+        // Chamada ao servidor em background
+        try {
+          const { error } = await OcorrenciaService.deletar(idParaDeletar);
+          if (error) {
+            // Reverter: restaurar no cache e recarregar
+            if (ocorrenciaOriginal && State.ocorrenciasCache) {
+              State.ocorrenciasCache = [
+                ocorrenciaOriginal,
+                ...State.ocorrenciasCache,
+              ];
+            }
+            await this.carregar();
+            UI.showToast(error.message, "error");
+          }
+          // Se sucesso, o Realtime vai manter a lista atualizada
+        } catch (err) {
+          // Reverter em caso de erro
+          if (ocorrenciaOriginal && State.ocorrenciasCache) {
+            State.ocorrenciasCache = [
+              ocorrenciaOriginal,
+              ...State.ocorrenciasCache,
+            ];
+          }
+          await this.carregar();
+          UI.showToast("Erro ao excluir ocorrência", "error");
+        }
       });
     }
+  },
+
+  renderizarLista(data) {
+    if (!this.lista || !data) return;
+
+    const souAdmin = isAdmin();
+    const tabela = document.querySelector(".tabela-ocorrencias");
+    const thead = tabela?.querySelector("thead tr");
+
+    // Ajusta colunas do header dinamicamente
+    if (thead) {
+      if (souAdmin) {
+        tabela.classList.remove("morador-view");
+        thead.innerHTML = `<th>Data</th><th>Ocorrência</th><th>Morador</th><th>Contato</th><th>Status</th><th>Ações</th>`;
+      } else {
+        tabela.classList.add("morador-view");
+        thead.innerHTML = `<th>Data</th><th>Ocorrência</th><th>Status</th><th>Ações</th>`;
+      }
+    }
+
+    if (!data.length) {
+      const colspan = souAdmin ? 6 : 4;
+      this.lista.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center">Nenhuma ocorrência.</td></tr>`;
+      return;
+    }
+
+    this.lista.innerHTML = data
+      .map((o) => {
+        const d = new Date(o.created_at).toLocaleDateString("pt-BR");
+        const podeExcluir = souAdmin || o.minha;
+
+        const btn = podeExcluir
+          ? `<button class="action-btn" onclick="deletarOcorrencia(${o.id})" style="color:#ef4444"><i class="fa-regular fa-trash-can"></i></button>`
+          : `<button class="action-btn action-btn-locked"><i class="fa-solid fa-lock"></i></button>`;
+
+        if (souAdmin) {
+          return `<tr>
+          <td data-label="Data" class="td-destaque">${d}</td>
+          <td data-label="Ocorrência" class="td-titulo">${Utils.safe(
+            o.titulo
+          )}</td>
+          <td data-label="Morador" class="td-texto">${Utils.safe(
+            o.registrador_nome
+          )}</td>
+          <td data-label="Contato" class="td-texto">${Utils.safe(
+            o.registrador_celular
+          )}</td>
+          <td data-label="Status" class="td-texto" style="text-transform:capitalize">${Utils.safe(
+            o.status
+          )}</td>
+          <td class="td-acao">${btn}</td>
+        </tr>`;
+        } else {
+          return `<tr>
+          <td data-label="Data" class="td-destaque">${d}</td>
+          <td data-label="Ocorrência" class="td-titulo">${Utils.safe(
+            o.titulo
+          )}</td>
+          <td data-label="Status" class="td-texto" style="text-transform:capitalize">${Utils.safe(
+            o.status
+          )}</td>
+          <td class="td-acao">${btn}</td>
+        </tr>`;
+        }
+      })
+      .join("");
   },
 
   async carregar() {
     if (!this.lista || State.carregandoOcorrencias) return;
     State.carregandoOcorrencias = true;
 
+    const souAdmin = isAdmin();
+
+    // SKELETON: Tabela Ocorrências (Minimalista: 1 linha)
+    // Ajustado para refletir EXATAMENTE as colunas visíveis
+    if (!this.lista.children.length) {
+      this.lista.innerHTML = Array(1)
+        .fill(0)
+        .map(
+          () => `
+        <tr>
+          <td><div class="skeleton skeleton-text" style="width:80px"></div></td>
+          <td><div class="skeleton skeleton-text" style="width:150px"></div></td>
+          ${
+            souAdmin
+              ? `<td><div class="skeleton skeleton-text" style="width:100px"></div></td>
+             <td><div class="skeleton skeleton-text" style="width:100px"></div></td>`
+              : ""
+          }
+          <td><div class="skeleton skeleton-text" style="width:70px"></div></td>
+          <td><div class="skeleton skeleton-text" style="width:30px"></div></td>
+        </tr>
+      `
+        )
+        .join("");
+    }
+
     try {
-      const souAdmin = isAdmin();
-      const tabela = document.querySelector(".tabela-ocorrencias");
-      const thead = tabela?.querySelector("thead tr");
-
-      // Ajusta colunas do header dinamicamente
-      if (thead) {
-        if (souAdmin) {
-          tabela.classList.remove("morador-view");
-          thead.innerHTML = `<th>Data</th><th>Ocorrência</th><th>Morador</th><th>Contato</th><th>Status</th><th>Ações</th>`;
-        } else {
-          tabela.classList.add("morador-view");
-          thead.innerHTML = `<th>Data</th><th>Ocorrência</th><th>Status</th><th>Ações</th>`;
-        }
-      }
-
-      // SKELETON: Tabela Ocorrências (Minimalista: 1 linha)
-      // Ajustado para refletir EXATAMENTE as colunas visíveis
-      if (!this.lista.children.length) {
-        this.lista.innerHTML = Array(1)
-          .fill(0)
-          .map(
-            () => `
-          <tr>
-            <td><div class="skeleton skeleton-text" style="width:80px"></div></td>
-            <td><div class="skeleton skeleton-text" style="width:150px"></div></td>
-            ${
-              souAdmin
-                ? `<td><div class="skeleton skeleton-text" style="width:100px"></div></td>
-               <td><div class="skeleton skeleton-text" style="width:100px"></div></td>`
-                : ""
-            }
-            <td><div class="skeleton skeleton-text" style="width:70px"></div></td>
-            <td><div class="skeleton skeleton-text" style="width:30px"></div></td>
-          </tr>
-        `
-          )
-          .join("");
-      }
-
       const { data, error } = await OcorrenciaService.listar();
       if (error) throw error;
 
-      if (!data?.length) {
-        const colspan = souAdmin ? 6 : 4;
-        this.lista.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center">Nenhuma ocorrência.</td></tr>`;
-        return;
-      }
+      // Atualizar cache
+      State.ocorrenciasCache = data || [];
 
-      this.lista.innerHTML = data
-        .map((o) => {
-          const d = new Date(o.created_at).toLocaleDateString("pt-BR");
-          const podeExcluir = souAdmin || o.minha;
-
-          const btn = podeExcluir
-            ? `<button class="action-btn" onclick="deletarOcorrencia(${o.id})" style="color:#ef4444"><i class="fa-regular fa-trash-can"></i></button>`
-            : `<button class="action-btn action-btn-locked"><i class="fa-solid fa-lock"></i></button>`;
-
-          if (souAdmin) {
-            return `<tr>
-            <td data-label="Data" class="td-destaque">${d}</td>
-            <td data-label="Ocorrência" class="td-titulo">${Utils.safe(
-              o.titulo
-            )}</td>
-            <td data-label="Morador" class="td-texto">${Utils.safe(
-              o.registrador_nome
-            )}</td>
-            <td data-label="Contato" class="td-texto">${Utils.safe(
-              o.registrador_celular
-            )}</td>
-            <td data-label="Status" class="td-texto" style="text-transform:capitalize">${Utils.safe(
-              o.status
-            )}</td>
-            <td class="td-acao">${btn}</td>
-          </tr>`;
-          } else {
-            return `<tr>
-            <td data-label="Data" class="td-destaque">${d}</td>
-            <td data-label="Ocorrência" class="td-titulo">${Utils.safe(
-              o.titulo
-            )}</td>
-            <td data-label="Status" class="td-texto" style="text-transform:capitalize">${Utils.safe(
-              o.status
-            )}</td>
-            <td class="td-acao">${btn}</td>
-          </tr>`;
-          }
-        })
-        .join("");
+      // Renderizar usando a função helper
+      this.renderizarLista(State.ocorrenciasCache);
     } catch (e) {
       const colspan = isAdmin() ? 6 : 4;
       this.lista.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center">Erro ao carregar.</td></tr>`;
@@ -1018,9 +1282,7 @@ const UIMoradores = {
     const inputCel = document.getElementById("celular");
     inputCel?.addEventListener("input", (e) => {
       let v = e.target.value.replace(/\D/g, "").substring(0, 11);
-      v = v
-        .replace(/^(\d{2})(\d)/g, "($1) $2")
-        .replace(/(\d{5})(\d)/, "$1-$2");
+      v = v.replace(/^(\d{2})(\d)/g, "($1) $2").replace(/(\d{5})(\d)/, "$1-$2");
       e.target.value = v;
     });
 
@@ -1037,9 +1299,9 @@ const UIMoradores = {
       const btn = this.form.querySelector("button");
       btn.disabled = true;
 
-      const unidade = `${document.getElementById("unidade-num").value} - Bloco ${
-        document.getElementById("unidade-bloco").value
-      }`;
+      const unidade = `${
+        document.getElementById("unidade-num").value
+      } - Bloco ${document.getElementById("unidade-bloco").value}`;
       const dados = {
         nome: document.getElementById("nome").value,
         celular: document.getElementById("celular").value,
@@ -1230,7 +1492,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         () => {
           UI.renderizarAtividadesRecentes();
           if (
-            document.getElementById("view-reservas").classList.contains("active")
+            document
+              .getElementById("view-reservas")
+              .classList.contains("active")
           )
             UIReserva.carregar();
         }
@@ -1250,7 +1514,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         () => {
           UI.renderizarKPIs(); // Atualiza contador de unidades
           if (
-            document.getElementById("view-moradores").classList.contains("active")
+            document
+              .getElementById("view-moradores")
+              .classList.contains("active")
           )
             UIMoradores.carregar();
         }
@@ -1263,12 +1529,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     UI.showToast("Erro ao inicializar sistema.", "error");
   }
 
-  // 5. Navegação Sidebar (SPA simples)
+  // 5. Navegação Sidebar (SPA simples) com Cache Inteligente
+  // Listener específico para o botão de logout (que está no footer)
+  const btnLogout = document.querySelector(".menu-item.logout, #btn-logout");
+  if (btnLogout) {
+    btnLogout.addEventListener("click", async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      await MoradorService.logout();
+    });
+  }
+
+  // Listeners para os itens do menu de navegação
   document.querySelectorAll(".sidebar-menu .menu-item").forEach((link) => {
     link.addEventListener("click", async (e) => {
+      // Ignora se for o botão de logout
       if (link.classList.contains("logout")) {
-        e.preventDefault();
-        return MoradorService.logout();
+        return;
       }
 
       e.preventDefault();
@@ -1286,9 +1563,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById(targetId).classList.add("active");
       document.querySelector(".top-bar .page-title").innerText = title;
 
-      // Lazy Load para economizar banda
-      if (targetId === "view-reservas") await UIReserva.carregar();
-      if (targetId === "view-ocorrencias") await UIOcorrencias.carregar();
+      // Cache Inteligente: Só faz fetch se não tiver dados no cache
+      // O Realtime mantém o cache atualizado em segundo plano
+      if (targetId === "view-reservas") {
+        if (State.reservasCache && State.reservasCache.length > 0) {
+          // Usa cache existente e renderiza imediatamente
+          UIReserva.renderizarLista(State.reservasCache);
+        } else {
+          // Só faz fetch se não tiver cache
+          await UIReserva.carregar();
+        }
+      }
+
+      if (targetId === "view-ocorrencias") {
+        if (State.ocorrenciasCache && State.ocorrenciasCache.length > 0) {
+          // Usa cache existente e renderiza imediatamente
+          UIOcorrencias.renderizarLista(State.ocorrenciasCache);
+        } else {
+          // Só faz fetch se não tiver cache
+          await UIOcorrencias.carregar();
+        }
+      }
     });
   });
 
